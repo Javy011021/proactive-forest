@@ -1,0 +1,24 @@
+		#print(uniq_y, count_y)
+		#lista_prob = np.empty((len(y_test),0))
+'''
+		for i in uniq_y:
+			index = np.where(uniq==i)[0][0]
+			print(i,index)
+			traspuesta = np.array([proba[:,index]]).transpose()
+			lista_prob = np.append(lista_prob,traspuesta,axis=1)
+			#print(lista_prob[0,:].sum())
+
+		dif=0 #hacer que sumen 1
+		for i,j in zip(lista_prob,proba):
+			suma = i.sum()
+			#print("Suma",suma)
+			dif = (j.sum())-suma
+			#print("Dif",dif,"dividir",len(uniq_y))
+			reponer = dif/len(uniq_y)
+			#print("reponer",reponer)
+			i+=reponer
+			suma1=i.sum()
+			print(suma1)
+			arreglar_mas(i,suma1)
+
+'''
