@@ -24,7 +24,7 @@ if __name__ == '__main__':
         data_name = name
         X, y = loader[0], loader[1]
 
-        fc = ProactiveForestClassifier(alpha=0.1, feature_prob=[0.18013752011991008, 0.31641150117003075, 0.009923654146116295, 0.0062430810667000805, 0.12711632459841984, 0.18150973746375662, 0.04439568498858198, 0.13426249644648436])#para ejecutar proactive forest------->COMENTAR EL ALGORITMO QUE NO SE VALLA A UTILIZAR
+        fc = ProactiveForestClassifier(alpha=0.1)#para ejecutar proactive forest------->COMENTAR EL ALGORITMO QUE NO SE VALLA A UTILIZAR
         #fc = DecisionForestClassifier()#para ejecutar random forest
 
 
