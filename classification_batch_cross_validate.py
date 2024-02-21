@@ -1,14 +1,7 @@
-from sklearn.metrics import accuracy_score, make_scorer, roc_auc_score, recall_score
-from sklearn.model_selection import cross_val_predict, cross_val_score
-from sklearn.preprocessing import LabelEncoder
-from sklearn.model_selection import StratifiedKFold
 import pandas as pd
-import numpy as np
-from sklearn.model_selection import train_test_split
 from examples import load_batch
 from proactive_forest.estimator import DecisionForestClassifier, ProactiveForestClassifier
 from utils import utils
-from sklearn.ensemble import RandomForestClassifier
 import warnings
 
 warnings.filterwarnings('ignore', category=RuntimeWarning)
@@ -19,7 +12,7 @@ if __name__ == '__main__':
 
     data = pd.DataFrame()
 
-    for name, loader in load_batch.get_batch_3():
+    for name, loader in load_batch.get_my_batch():
 
         data_name = name
         X, y = loader[0], loader[1]
@@ -32,9 +25,9 @@ if __name__ == '__main__':
         recall, roc_auc, accracy, pcd, presi = utils.cross_validation_train(fc,train,test)#------> Medida recall y roc_auc efectuando validacion cruzada con k=10
 
         #print(recall, roc_auc)
-
         data[data_name] = pd.Series([recall, roc_auc, accracy, pcd, presi],
                                     index=['Recall_score', 'Auc_score', 'Accuracy_score', 'Diversity_PCD','Presicion'])
         print('Done:', name)
+        data.T.to_excel("./Results.xlsx", header=True, index=True) #batch
 
-    data.T.to_csv("./Resultados.csv", header=True, index=True) #batch
+    data.T.to_excel("./Results.xlsx", header=True, index=True) #batch

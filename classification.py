@@ -1,4 +1,3 @@
-from sklearn.model_selection import train_test_split
 from examples import load_data
 from proactive_forest.estimator import DecisionForestClassifier, ProactiveForestClassifier
 import pandas as pd
@@ -15,7 +14,7 @@ warnings.filterwarnings('ignore', category=FutureWarning)
 
 if __name__ == '__main__':
 
-    X, y = load_data.load_balance_scale()
+    X, y = load_data.load_cmc()
 
     X_train, X_test, y_train, y_test = utils.train_test_splitt(X, y, 0.33)
 
