@@ -16,6 +16,11 @@ from proactive_forest.metrics import resolve_split_criterion
 from proactive_forest.feature_selection import resolve_feature_selection
 
 
+
+import utils.utils as utils_2
+
+
+
 class DecisionTreeClassifier(BaseEstimator, ClassifierMixin):
     def __init__(self,
                  max_depth=None,
@@ -722,3 +727,47 @@ class ProactiveForestClassifier(DecisionForestClassifier):
             self._tree_builder.feature_prob = ledger.probabilities
 
         return self
+
+    def prune_tree(self):
+        print('ok')
+        # print(self._trees[0])
+        pass
+    
+    
+    def accuracy_pruning(self, X, y, accuracy):
+        print('purn')
+        predictors = self._trees
+        limit = 50
+        
+        # predictions = self.predict(X)
+        # pf_accuracy = accuracy_score(y, predictions)
+        # print(pf_accuracy)
+        # print(X)
+        
+        while len(predictors) > limit:
+            for i in range(len(predictors)):
+                min_delta = 100
+                new_classifier = ProactiveForestClassifier(n_estimators=len(predictors) - 1)
+                new_classifier._trees = [tree for j, tree in enumerate(predictors) if j != i]
+                                                    
+                new_classifier.fit(X, y)#entrenar proactive
+                    
+                predictions = new_classifier.predict(X)
+                pf_accuracy = accuracy_score(y, predictions)#accuracy para PF   
+                    
+                # Calcular Δ−T = pF - pF−T
+                delta_T = accuracy - pf_accuracy
+                
+                # Si Δ−T es el mínimo hasta ahora, seleccionar T como el árbol menos importante para eliminar
+                if delta_T < min_delta:
+                    min_delta = delta_T
+                    min_delta_tree = i                
+                                
+            # Eliminar el árbol menos importante
+            predictors = [tree for j, tree in enumerate(predictors) if j != min_delta_tree]
+            
+        self._trees = predictions
+
+
+    def tree_by_tree_pruning(self, X, y, accuracy):
+        pass

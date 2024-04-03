@@ -55,6 +55,15 @@ if __name__ == '__main__':
     rf_PCD = rf.diversity_measure(X_test, y_test)
     print("Diversidad con PCD para Proactive Forest", pf_PCD)
     print("Diversidad con PCD para Random Forest", rf_PCD)
+    
+    
+    print("-----------------------------------------------")
+    
+    pf.accuracy_pruning(X, y, pf_accuracy)
+    pf.fit(X_train, y_train)
+    pf_predictions = pf.predict(X_test)
+    pf_accuracy = accuracy_score(y_test, pf_predictions)
+    print('new acurracy', pf_accuracy)
 
     data_save = pd.DataFrame()
     data_save["Resultados PF"] = pd.Series([pf_cmat, pf_recall, pf_auc, pf_accuracy, pf_PCD], 
