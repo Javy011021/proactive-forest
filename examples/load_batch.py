@@ -3,9 +3,9 @@ from examples import load_data
 def get_my_batch():
     data = [
         ('iris', load_data.load_iris()),
-        ('tae', load_data.load_tae()),
-        ('car', load_data.load_car()),
-        ('cmc', load_data.load_cmc()),
+        # ('tae', load_data.load_tae()),
+        # ('car', load_data.load_car()),
+        # ('cmc', load_data.load_cmc()),
     ]
     return data
 

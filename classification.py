@@ -14,7 +14,7 @@ warnings.filterwarnings('ignore', category=FutureWarning)
 
 if __name__ == '__main__':
 
-    X, y = load_data.load_cmc()
+    X, y = load_data.load_iris()
 
     X_train, X_test, y_train, y_test = utils.train_test_splitt(X, y, 0.33)
 
