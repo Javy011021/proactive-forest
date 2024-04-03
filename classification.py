@@ -2,6 +2,7 @@ from examples import load_data
 from proactive_forest.estimator import DecisionForestClassifier, ProactiveForestClassifier
 import pandas as pd
 from sklearn.metrics import recall_score, roc_auc_score, confusion_matrix, accuracy_score
+from proactive_forest.preprocessing import probabilites_chi2
 from utils import utils
 import numpy as np
 import warnings
@@ -14,7 +15,14 @@ warnings.filterwarnings('ignore', category=FutureWarning)
 
 if __name__ == '__main__':
 
-    X, y = load_data.load_cmc()
+    X, y = load_data.load_car()
+    
+    prob = probabilites_chi2(X=X.copy(),y=y.copy())
+    print('end', prob)
+    print('sum', sum(prob))
+    print('X', X)
+    
+    
 
     X_train, X_test, y_train, y_test = utils.train_test_splitt(X, y, 0.33)
 
