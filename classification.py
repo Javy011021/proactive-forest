@@ -17,16 +17,11 @@ if __name__ == '__main__':
 
     X, y = load_data.load_car()
     
-    prob = probabilites_chi2(X=X.copy(),y=y.copy())
-    print('end', prob)
-    print('sum', sum(prob))
-    print('X', X)
+    prob = probabilites_chi2(X=X.copy(),y=y.copy()) 
     
-    
-
     X_train, X_test, y_train, y_test = utils.train_test_splitt(X, y, 0.33)
 
-    pf = ProactiveForestClassifier(n_estimators=100,alpha=0.1, bootstrap=True)
+    pf = ProactiveForestClassifier(n_estimators=100,alpha=0.1, bootstrap=True, feature_prob=prob)
     rf = DecisionForestClassifier()
 
     pf.fit(X_train, y_train)#entrenar proactive

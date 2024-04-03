@@ -20,14 +20,13 @@ def string_to_number(X):
         if column.dtype == 'object':
             additional_object = {}
             column = column.apply(lambda x: assign_number(x, additional_object))
-            column = normalize(column)
-            X.iloc[:, i] = column
+        column = normalize(column)
+        X.iloc[:, i] = column
                     
 
 def probabilites_chi2(X, y):
     
     string_to_number(X)
-
     selector = SelectKBest(score_func=chi2, k=2)
     selector.fit_transform(X, y)
     selector.get_support()
@@ -39,6 +38,3 @@ def probabilites_chi2(X, y):
         normalized_scores = [round(score, 10) for score in normalized_scores]
         
     return normalized_scores
-
-
-    
