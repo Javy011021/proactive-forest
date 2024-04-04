@@ -16,6 +16,11 @@ from proactive_forest.metrics import resolve_split_criterion
 from proactive_forest.feature_selection import resolve_feature_selection
 
 
+
+import utils.utils as utils_2
+
+
+
 class DecisionTreeClassifier(BaseEstimator, ClassifierMixin):
     def __init__(self,
                  max_depth=None,
@@ -722,3 +727,59 @@ class ProactiveForestClassifier(DecisionForestClassifier):
             self._tree_builder.feature_prob = ledger.probabilities
 
         return self
+
+    def parable_pruning(self, X_train, X_test, y_train, y_test):
+        predictors = self._trees
+        accuracy_list = []
+            
+        for i in predictors:
+            temp = DecisionForestClassifier()
+            temp._trees = i
+            temp.fit(X_train, y_train)
+            predictions = temp.predict(X_test)
+            pf_accuracy = accuracy_score(y_test, predictions)
+            accuracy_list.append({i: pf_accuracy})
+        
+        accuracy_list.sort(key=lambda x: list(x.values())[0], reverse=True)
+        trees = []
+        before_pf_accuracy = 0
+        for i in accuracy_list:
+            trees.append(list(i.keys())[0])
+            new_classifier = ProactiveForestClassifier()
+            new_classifier._trees = trees
+            
+            new_classifier.fit(X_train, y_train)    
+            predictions = new_classifier.predict(X_test)
+            pf_accuracy = accuracy_score(y_test, predictions)            
+            
+            if before_pf_accuracy > pf_accuracy:
+                trees.pop()
+            before_pf_accuracy = pf_accuracy
+        
+        self._trees = trees
+    
+    def accuracy_pruning(self, X_train, X_test, y_train, y_test, accuracy, limit = 99):
+        predictors = self._trees
+        
+        while len(predictors) > limit:
+            for i in range(len(predictors)):
+                min_delta = 100
+                new_classifier = ProactiveForestClassifier(n_estimators=len(predictors) - 1)
+                new_classifier._trees = [tree for j, tree in enumerate(predictors) if j != i]
+                                                    
+                new_classifier.fit(X_train, y_train) 
+                predictions = new_classifier.predict(X_test)
+                pf_accuracy = accuracy_score(y_test, predictions)
+                    
+                delta_T = accuracy - pf_accuracy                
+                if delta_T < min_delta:
+                    min_delta = delta_T
+                    min_delta_tree = i                
+                                
+            predictors = [tree for j, tree in enumerate(predictors) if j != min_delta_tree]
+            
+        self._trees = predictions
+
+
+    def tree_by_tree_pruning(self, X, y, accuracy):
+        pass

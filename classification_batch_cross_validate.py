@@ -20,8 +20,10 @@ if __name__ == '__main__':
         fc = ProactiveForestClassifier(alpha=0.1)#para ejecutar proactive forest------->COMENTAR EL ALGORITMO QUE NO SE VALLA A UTILIZAR
         #fc = DecisionForestClassifier()#para ejecutar random forest
 
+        train, test = utils.create_one(X.to_numpy(), y.to_numpy())
+        recall, roc_auc, accracy, pcd, presi = utils.validation_train(fc,train,test)#
 
-        train, test = utils.create_k(X.to_numpy(), y.to_numpy(), k=10)
+        # train, test = utils.create_k(X.to_numpy(), y.to_numpy(), k=10)
         recall, roc_auc, accracy, pcd, presi = utils.cross_validation_train(fc,train,test)#------> Medida recall y roc_auc efectuando validacion cruzada con k=10
 
         #print(recall, roc_auc)
