@@ -1,7 +1,7 @@
 import numpy as np
 import random
 import pickle as pck
-from sklearn.model_selection import KFold
+from sklearn.model_selection import KFold, StratifiedKFold
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import recall_score, roc_auc_score, confusion_matrix, accuracy_score, precision_score
 import pandas as pd
@@ -131,3 +131,53 @@ def train_test_splitt(train_data, train_labels, test_size=0.2):
     y_train, y_test = train_labels[:split_i], train_labels[split_i:]
 
     return x_train, x_test, y_train, y_test
+
+
+def create_one(x, y):
+	train=[]
+	test=[]
+	#data, labels = shuffle_data(x,y)
+	data, labels = x, y
+	kf = KFold(n_splits=2)
+
+	for train_index, test_index in kf.split(data):
+		x_train, x_test= data[train_index], data[test_index]
+		y_train, y_test= labels[train_index], labels[test_index]
+		train.append([x_train,y_train])
+		test.append([x_test,y_test])
+		break
+
+	return train, test
+
+def validation_train(model, train, test):
+
+	real_y=np.array([],dtype=str)
+	predicc_y=np.array([],dtype=str)
+ 
+	for trainn, testss in zip(train,test):
+		x_train=trainn[0]
+		x_test=testss[0]
+
+		y_train=trainn[1]
+		y_test=testss[1]
+  
+		print("Start validation")
+		model.fit(x_train,y_train)
+  
+		avg_auc = 0
+		predictions = model.predict(x_test)
+		conf_matrx = confusion_matrix(y_test,predictions)
+
+		real_y = np.append(real_y, y_test)
+		predicc_y = np.append(predicc_y, predictions)
+
+		print("Confution matrix")
+		print(conf_matrx)
+		avg_recall = recall_score(y_test,predictions, average = 'macro')
+		avg_presi = precision_score(y_test,predictions, average = 'macro')
+		avg_acc = accuracy_score(y_test,predictions)
+		avg_pcd = model.diversity_measure(x_test, y_test)
+
+	print("The final cross_val recall is", avg_recall, ", roc_auc is", avg_auc,", precision is",avg_presi,", accuracy is", avg_acc, "and diversity PCD is", avg_pcd)
+
+	return avg_recall, avg_auc, avg_acc, avg_pcd, avg_presi
