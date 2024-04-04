@@ -4,9 +4,8 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.utils import check_X_y, check_array
 from sklearn.exceptions import NotFittedError
 from sklearn.metrics import accuracy_score
-import pandas as pd
 import proactive_forest.utils as utils
-from proactive_forest.diversity import PercentageCorrectDiversity, QStatisticDiversity
+from proactive_forest.diversity import PercentageCorrectDiversity, QStatisticDiversity, Variance_KWDiversity, EntropyDiversity, KagreementDiversity, DoubleFaultDiversity, DisagreementDiversity, FeatureImportancesDiversity, SelectedFeaturesDiversity, StructuralDiversity, FeatureImportancesByLevelDiversity
 from proactive_forest.tree_builder import TreeBuilder
 from proactive_forest.voters import PerformanceWeightingVoter
 from proactive_forest.sets import SimpleSet, BaggingSet
@@ -14,11 +13,6 @@ from proactive_forest.probabilites import FIProbabilityLedger
 from proactive_forest.splits import resolve_split_selection
 from proactive_forest.metrics import resolve_split_criterion
 from proactive_forest.feature_selection import resolve_feature_selection
-
-
-
-import utils.utils as utils_2
-
 
 
 class DecisionTreeClassifier(BaseEstimator, ClassifierMixin):
@@ -562,6 +556,7 @@ class DecisionForestClassifier(BaseEstimator, ClassifierMixin):
         :param diversity: <string> The type of diversity to be calculated
                         "pcd" for Percentage of Correct Diversity
                         "qstat" for QStatistic Diversity
+        :param accuracy: the average classification accuracy
         :return: <float>
         """
         X, y = check_X_y(X, y, dtype=None)
@@ -571,6 +566,24 @@ class DecisionForestClassifier(BaseEstimator, ClassifierMixin):
             metric = PercentageCorrectDiversity()
         elif diversity == 'qstat':
             metric = QStatisticDiversity()
+        elif diversity == 'vkw':
+            metric = Variance_KWDiversity()
+        elif diversity == 'ent':
+            metric = EntropyDiversity()
+        elif diversity == 'kag':
+            metric = KagreementDiversity()
+        elif diversity == 'df':
+            metric = DoubleFaultDiversity()
+        elif diversity == 'dis':
+            metric = DisagreementDiversity()
+        elif diversity == 'fi':
+            metric = FeatureImportancesDiversity()
+        elif diversity == 'sf':
+            metric = SelectedFeaturesDiversity()
+        elif diversity == 'sd':
+            metric = StructuralDiversity()
+        elif diversity == 'fil':
+            metric = FeatureImportancesByLevelDiversity()
         else:
             raise ValueError("It was not possible to recognize the diversity measure.")
 
