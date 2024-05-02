@@ -3,6 +3,7 @@ from proactive_forest.estimator import DecisionForestClassifier, ProactiveForest
 import pandas as pd
 from sklearn.metrics import recall_score, roc_auc_score, confusion_matrix, accuracy_score
 from proactive_forest.preprocessing import probabilites_chi2
+from email_notification import send_finish_email, send_finish_file
 from utils import utils
 import numpy as np
 import warnings
@@ -14,14 +15,13 @@ warnings.filterwarnings('ignore', category=UserWarning)
 warnings.filterwarnings('ignore', category=FutureWarning)
 
 if __name__ == '__main__':
+    file_name = "./Resultados_Un_Modelo_PF_vs_RF_.csv"
 
     X, y = load_data.load_car()
     
-    prob = probabilites_chi2(X=X.copy(),y=y.copy()) 
-    
     X_train, X_test, y_train, y_test = utils.train_test_splitt(X, y, 0.33)
 
-    pf = ProactiveForestClassifier(n_estimators=100,alpha=0.1, bootstrap=True, feature_prob=prob)
+    pf = ProactiveForestClassifier(n_estimators=100,alpha=0.1, bootstrap=True)
     rf = DecisionForestClassifier()
 
     pf.fit(X_train, y_train)#entrenar proactive
@@ -59,17 +59,19 @@ if __name__ == '__main__':
     print("Diversidad con PCD para Proactive Forest", pf_PCD)
     print("Diversidad con PCD para Random Forest", rf_PCD)
     
-    print("-----------------------------------------------")
+    # print("-----------------------------------------------")
     # pf.parable_pruning(X_train, X_test, y_train, y_test)
-    pf.accuracy_pruning(X_train, X_test, y_train, y_test, pf_accuracy)
-    pf.fit(X_train, y_train)
-    pf_predictions = pf.predict(X_test)
-    pf_accuracy = accuracy_score(y_test, pf_predictions)
-    print('new acurracy', pf_accuracy)
+    # pf.accuracy_pruning(X_train, X_test, y_train, y_test, pf_accuracy)
+    # pf.fit(X_train, y_train)
+    # pf_predictions = pf.predict(X_test)
+    # pf_accuracy = accuracy_score(y_test, pf_predictions)
+    # print('new acurracy', pf_accuracy)
 
     data_save = pd.DataFrame()
     data_save["Resultados PF"] = pd.Series([pf_cmat, pf_recall, pf_auc, pf_accuracy, pf_PCD], 
     	                                   index=['Matriz','Recall','Roc_Auc','Accuracy','Diversidad PCD'])
     data_save["Resultados RF"] = pd.Series([rf_cmat, rf_recall, rf_auc, rf_accuracy, rf_PCD], 
     	                                   index=['Matriz','Recall', 'Roc_Auc','Accuracy', 'Diversidad PCD'])
-    data_save.T.to_csv("./Resultados_Un_Modelo_PF_vs_RF_.csv", header=True, index=True)
+    data_save.T.to_csv(file_name, header=True, index=True)
+    
+    # send_finish_file(file_name);
