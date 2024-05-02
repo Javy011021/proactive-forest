@@ -74,4 +74,4 @@ if __name__ == '__main__':
     	                                   index=['Matriz','Recall', 'Roc_Auc','Accuracy', 'Diversidad PCD'])
     data_save.T.to_csv(file_name, header=True, index=True)
     
-    send_finish_file(file_name);
+    # send_finish_file(file_name);
