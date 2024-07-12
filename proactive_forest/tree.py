@@ -1,6 +1,8 @@
 from abc import ABC, abstractmethod
 import numpy as np
-
+from sklearn.base import check_array
+from sklearn.exceptions import NotFittedError
+from sklearn.metrics import accuracy_score 
 
 class DecisionTree:
     def __init__(self, n_features):
@@ -64,12 +66,16 @@ class DecisionTree:
         current_node = self.root()
         leaf_found = False
         prediction = None
+        # print('start predict')
         while not leaf_found:
             if isinstance(self._nodes[current_node], DecisionLeaf):
                 leaf_found = True
+                # print('leaf_node: ', current_node, ',  depth: ', self._nodes[current_node].depth)
                 prediction = self._nodes[current_node].result
             else:
                 current_node = self._nodes[current_node].result_branch(x)
+                # print('current_node: ', current_node, ', lenght: ', len(self._nodes))
+                # print('current_node: ', current_node, ',  depth: ', self._nodes[current_node].depth)
         return prediction
 
     def predict_proba(self, x,indexs):
@@ -155,7 +161,144 @@ class DecisionTree:
             if isinstance(node, DecisionLeaf):
                 count += 1
         return count
+    
+    def _validate(self, X, check_input):
+        """
+        Validate X whenever one tries to predict or predict_proba.
 
+        :param X: <numpy ndarray> An array containing the feature vectors
+        :param check_input: <bool> If input array must be checked
+        :return: <bool>
+        """
+        if self._last_node_id is None:
+            raise NotFittedError("Estimator not fitted, "
+                                 "call `fit` before exploiting the model.")
+
+        if check_input:
+            X = check_array(X, dtype=None)
+
+        n_features = X.shape[1]
+        if self._n_features != n_features:
+            raise ValueError("Number of features of the model must "
+                             " match the input. Model n_features is %s and "
+                             " input n_features is %s "
+                             % (self._n_features, n_features))
+
+        return X
+
+    def _get_father(self, nodes, index):
+        result=-1
+        for i in range(index-1, -1, -1):
+            if(nodes[i].depth == nodes[index].depth -1):
+                result = nodes[i]
+                break
+        return result
+            
+    def _order_branchs(self, nodes):
+        for i in nodes:
+            if not isinstance(i, DecisionLeaf):
+                i.left_branch = None
+                i.right_branch = None
+        
+        for i in range(1,len(nodes)):
+            father = self._get_father(nodes, i)
+            if not (father.left_branch):
+                father.left_branch = i
+            else:
+                father.right_branch = i
+  
+    
+    def predict_list(self, X, check_input=True):
+        """
+        Predicts the classes for the new instances in X.
+
+        :param X: <numpy ndarray> An array containing the feature vectors
+        :param check_input: <bool> If input array must be checked
+        :return: <numpy array>
+        """
+        if check_input:
+            X = self._validate(X, check_input=check_input)
+
+        sample_size, features_count = X.shape
+        result = np.zeros(sample_size, dtype=int)
+        for i in range(sample_size):
+            x = X[i]
+            result[i] = self.predict(x)
+        return result
+    
+    def _convert_to_leaf(self, node):
+        result = np.argmax(node.samples)
+        return DecisionLeaf(node.samples, node.depth, result)
+    
+    def _delete_node_brachs(self, nodes, index):
+        result = nodes[:index+1]
+        for i in range(index+1, len(nodes)):
+            if nodes[i].depth <= nodes[index].depth:
+                result.extend(nodes[i:])
+                break
+        return result
+    
+    def depth_prune(self, X, y, encoder):
+        """Depth-based pruning function."""
+        
+        dmax = [5, 10, 15, 20, 50, 100]
+        changedNodes = []
+        accuracyList = []
+        originNodes = self.nodes.copy()
+        setAccuracy = accuracy_score(y, encoder.inverse_transform(self.predict_list(X)))
+        
+        for i in dmax:
+            nodeList = [] 
+            for j in range(len(originNodes)):
+                node = originNodes[j]
+                if node.depth < i:
+                    nodeList.append(node)
+                elif node.depth == i:
+                    nodeList.append(self._convert_to_leaf(node))
+            self._order_branchs(nodeList)   
+            self.nodes = nodeList
+            self.last_node_id = len(nodeList)
+            
+            changedNodes.append(nodeList)
+            dAcc = accuracy_score(y, encoder.inverse_transform(self.predict_list(X)))
+            accuracyList.append(dAcc)
+        
+        maximum = max(accuracyList)
+        maxindex = accuracyList.index(maximum)  
+        if setAccuracy <= maximum:
+            self.nodes = changedNodes[maxindex]
+            self.last_node_id = len(changedNodes[maxindex])
+            self._order_branchs(self.nodes)
+            
+    def reduce_prune(self, X, y, encoder):
+        """Reduced error pruning function."""
+        
+        changedNodes = []
+        accuracyList = []
+        originNodes = self.nodes.copy()
+        setAccuracy = accuracy_score(y, encoder.inverse_transform(self.predict_list(X)))
+        
+        for i in range(len(originNodes)):
+            if not isinstance(originNodes[i], DecisionLeaf):
+                nodeList = originNodes.copy()
+                nodeList[i] = self._convert_to_leaf(nodeList[i])                    
+                nodeList = self._delete_node_brachs(nodeList, i)                
+                self._order_branchs(nodeList)
+                self.nodes = nodeList
+                self.last_node_id = len(nodeList)
+                
+                changedNodes.append(nodeList)
+                dAcc = accuracy_score(y, encoder.inverse_transform(self.predict_list(X)))
+                accuracyList.append(dAcc)
+        
+        maximum = max(accuracyList)
+        maxindex = accuracyList.index(maximum)  
+        if setAccuracy <= maximum:
+            self.nodes = changedNodes[maxindex]
+            self.last_node_id = len(changedNodes[maxindex])
+            self._order_branchs(self.nodes)
+            self.reduce_prune(X, y, encoder)                   
+             
 
 class DecisionNode(ABC):
     def __init__(self, samples, depth):

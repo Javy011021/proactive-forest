@@ -8,6 +8,8 @@ from utils import utils
 import numpy as np
 import warnings
 import pandas as pd
+import time
+# from test import get_best_params
 
 
 warnings.filterwarnings('ignore', category=RuntimeWarning)
@@ -15,13 +17,16 @@ warnings.filterwarnings('ignore', category=UserWarning)
 warnings.filterwarnings('ignore', category=FutureWarning)
 
 if __name__ == '__main__':
+    tiempo_inicio = time.time()
+    
     file_name = "./Resultados_Un_Modelo_PF_vs_RF_.csv"
 
-    X, y = load_data.load_car()
+    X, y = load_data.load_iris()
+    
     
     X_train, X_test, y_train, y_test = utils.train_test_splitt(X, y, 0.33)
-
-    pf = ProactiveForestClassifier(n_estimators=100,alpha=0.1, bootstrap=True)
+    
+    pf = ProactiveForestClassifier(n_estimators=30,alpha=0.1, bootstrap=True)
     rf = DecisionForestClassifier()
 
     pf.fit(X_train, y_train)#entrenar proactive
@@ -59,13 +64,27 @@ if __name__ == '__main__':
     print("Diversidad con PCD para Proactive Forest", pf_PCD)
     print("Diversidad con PCD para Random Forest", rf_PCD)
     
-    # print("-----------------------------------------------")
-    # pf.parable_pruning(X_train, X_test, y_train, y_test)
-    # pf.accuracy_pruning(X_train, X_test, y_train, y_test, pf_accuracy)
+    print("-----------------------------------------------")
+    # pf.pruning(X_train, X_test, y_train, y_test)
+    # # pf.accuracy_pruning(X_train, X_test, y_train, y_test, pf_accuracy)
     # pf.fit(X_train, y_train)
     # pf_predictions = pf.predict(X_test)
     # pf_accuracy = accuracy_score(y_test, pf_predictions)
     # print('new acurracy', pf_accuracy)
+    # print('trees', len( pf._trees))
+    
+    pf.pruning( X_test, y_test)
+    
+    pf_accuracy = accuracy_score(y_test,pf_predictions)#accuracy para PF
+    print("Instancias correctamente clasificadas para Proactive Forest", pf_accuracy)
+
+    pf_PCD = pf.diversity_measure(X_test, y_test, diversity='df')
+    print("Diversidad con PCD para Proactive Forest", pf_PCD)
+    
+    tiempo_fin = time.time()
+    duracion = (tiempo_fin - tiempo_inicio)/ 60
+    print(f"La función se ejecutó en {duracion} minutos.")
+    
 
     data_save = pd.DataFrame()
     data_save["Resultados PF"] = pd.Series([pf_cmat, pf_recall, pf_auc, pf_accuracy, pf_PCD], 

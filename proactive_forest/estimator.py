@@ -4,6 +4,7 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.utils import check_X_y, check_array
 from sklearn.exceptions import NotFittedError
 from sklearn.metrics import accuracy_score
+from proactive_forest.tree import DecisionLeaf
 import proactive_forest.utils as utils
 from proactive_forest.diversity import PercentageCorrectDiversity, QStatisticDiversity, Variance_KWDiversity, EntropyDiversity, KagreementDiversity, DoubleFaultDiversity, DisagreementDiversity, FeatureImportancesDiversity, SelectedFeaturesDiversity, StructuralDiversity, FeatureImportancesByLevelDiversity
 from proactive_forest.tree_builder import TreeBuilder
@@ -633,9 +634,65 @@ class DecisionForestClassifier(BaseEstimator, ClassifierMixin):
             x = X[i]
             result[i] = tree.predict(x)
             #print(tree.predict(x))
-        #print(result)
         return result
-
+    
+    
+    def p(self, X_train, X_test, y_train, y_test):
+        predictors = self._trees
+        accuracy_list = []
+            
+        for i in predictors:
+            result = self._predict_on_tree(X_test, i)
+            predictions = self._encoder.inverse_transform(result)
+            pf_accuracy = accuracy_score(y_test, predictions)
+            accuracy_list.append({i: pf_accuracy})
+        
+        accuracy_list.sort(key=lambda x: list(x.values())[0], reverse=True)
+        print(accuracy_list)
+        # for i in accuracy_list:
+            
+        trees = []
+        before_pf_accuracy = 0
+        new_vals = []
+        for i in accuracy_list:
+            trees.append(list(i.keys())[0])
+            new_classifier = ProactiveForestClassifier()
+            new_classifier._trees = trees
+            print(len(new_classifier._trees))
+            
+            new_classifier.fit(X_train, y_train)    
+            predictions = new_classifier.predict(X_test)
+            pf_accuracy = accuracy_score(y_test, predictions)  
+            print(pf_accuracy)
+            new_vals.append(pf_accuracy)
+        
+        print(pf_accuracy)
+            
+        #     if before_pf_accuracy > pf_accuracy:
+        #         trees.pop()
+        #     before_pf_accuracy = pf_accuracy
+        
+        # self._trees = trees
+           
+    def pruning(self, X_test, y_test, pruning='error'):
+        if pruning  == 'depth':
+            return self.depth_prune(X_test, y_test)
+        elif pruning  == 'error':
+            return self.trees_reduce_prune(X_test, y_test)
+        else:
+            raise ValueError("It was not possible to recognize the pruning method.")
+        
+    
+    def depth_prune(self, X_test, y_test):
+        for i in self._trees:
+            i.depth_prune(X_test, y_test, self._encoder)
+    
+    def trees_reduce_prune(self, X_test, y_test):
+        count = 1
+        for i in self._trees:
+            print('tree ', count)
+            count += 1
+            i.reduce_prune(X_test, y_test, self._encoder)            
 
 class ProactiveForestClassifier(DecisionForestClassifier):
     def __init__(self,
