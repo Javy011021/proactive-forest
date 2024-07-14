@@ -2,11 +2,8 @@ from examples import load_data
 
 def get_my_batch():
     data = [        
-        ('optdigits', load_data.load_optdigits()),
-        ('page_blocks', load_data.load_page_blocks()),
-        ('liver', load_data.load_liver_disorder()),
-        ('letter', load_data.load_letter()),
-        ('nursery', load_data.load_nursery())
+        # ('letter', load_data.load_letter()),
+        # ('nursery', load_data.load_nursery())
     ]
     return data
 
