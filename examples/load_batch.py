@@ -2,7 +2,7 @@ from examples import load_data
 
 def get_my_batch():
     data = [        
-        # ('letter', load_data.load_letter()),
+        ('letter', load_data.load_letter()),
         # ('nursery', load_data.load_nursery())
     ]
     return data

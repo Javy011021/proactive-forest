@@ -291,13 +291,14 @@ class DecisionTree:
                 dAcc = accuracy_score(y, encoder.inverse_transform(self.predict_list(X)))
                 accuracyList.append(dAcc)
         
-        maximum = max(accuracyList)
-        maxindex = accuracyList.index(maximum)  
-        if setAccuracy <= maximum:
-            self.nodes = changedNodes[maxindex]
-            self.last_node_id = len(changedNodes[maxindex])
-            self._order_branchs(self.nodes)
-            self.reduce_prune(X, y, encoder)                   
+        if len(accuracyList) != 0:
+            maximum = max(accuracyList)
+            maxindex = accuracyList.index(maximum)  
+            if setAccuracy <= maximum:
+                self.nodes = changedNodes[maxindex]
+                self.last_node_id = len(changedNodes[maxindex])
+                self._order_branchs(self.nodes)
+                self.reduce_prune(X, y, encoder)                   
              
 
 class DecisionNode(ABC):
