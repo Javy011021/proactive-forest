@@ -689,10 +689,16 @@ class DecisionForestClassifier(BaseEstimator, ClassifierMixin):
     
     def trees_reduce_prune(self, X_test, y_test):
         count = 1
+        start_nodes = 0
+        end_nodes = 0
         for i in self._trees:
             print('tree ', count)
             count += 1
-            i.reduce_prune(X_test, y_test, self._encoder)            
+            start_nodes += len(i.nodes)
+            i.reduce_prune(X_test, y_test, self._encoder) 
+            end_nodes += len(i.nodes)    
+        return start_nodes - end_nodes
+                       
 
 class ProactiveForestClassifier(DecisionForestClassifier):
     def __init__(self,

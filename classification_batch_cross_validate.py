@@ -29,17 +29,17 @@ if __name__ == '__main__':
         recall, roc_auc, accracy, pcd, presi = utils.cross_validation_train(fc,train,test)#------> Medida recall y roc_auc efectuando validacion cruzada con k=10
 
         X_train, X_test, y_train, y_test = utils.train_test_splitt(X, y, 0.33)
-        fc.pruning(X_test, y_test)
+        diff = fc.pruning(X_test, y_test)
         
         recall, roc_auc, accracy, pcd, presi = utils.cross_validation_train(fc,train,test)
         
         end = time.time()
         duration = (end-start) / 60
         print(f'The function was executed in {duration} minutes.')
-        data[data_name] = pd.Series([recall, roc_auc, accracy, pcd, presi, duration],
-                                    index=['Recall_score', 'Auc_score', 'Accuracy_score', 'Diversity_PCD','Presicion', 'Time Mts'])
-        saver[data_name] = pd.Series([recall, roc_auc, accracy, pcd, presi, duration],
-                                    index=['Recall_score', 'Auc_score', 'Accuracy_score', 'Diversity_PCD','Presicion', 'Time Mts'])
+        data[data_name] = pd.Series([recall, roc_auc, accracy, pcd, presi, duration, diff],
+                                    index=['Recall_score', 'Auc_score', 'Accuracy_score', 'Diversity_PCD','Presicion', 'Time Mts', 'Difference'])
+        saver[data_name] = pd.Series([recall, roc_auc, accracy, pcd, presi, duration, diff],
+                                    index=['Recall_score', 'Auc_score', 'Accuracy_score', 'Diversity_PCD','Presicion', 'Time Mts', 'Difference'])
         print('Done:', name)
         saver.T.to_csv(f"./results/{name}.csv", header=True, index=True) #batch
         saver.T.to_excel(f"./results/{name}.xlsx", header=True, index=True) #batch
