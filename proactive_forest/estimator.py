@@ -697,7 +697,7 @@ class DecisionForestClassifier(BaseEstimator, ClassifierMixin):
             start_nodes += len(i.nodes)
             i.reduce_prune(X_test, y_test, self._encoder) 
             end_nodes += len(i.nodes)    
-        return start_nodes - end_nodes
+        return start_nodes, end_nodes
                        
 
 class ProactiveForestClassifier(DecisionForestClassifier):
