@@ -19,7 +19,7 @@ warnings.filterwarnings('ignore', category=FutureWarning)
 if __name__ == '__main__':
     tiempo_inicio = time.time()
     
-    file_name = "./Resultados_Un_Modelo_PF_vs_RF_.csv"
+    file_name = "./results/Resultados_Un_Modelo_PF_vs_RF_.csv"
 
     X, y = load_data.load_iris()
     
@@ -64,27 +64,20 @@ if __name__ == '__main__':
     print("Diversidad con PCD para Proactive Forest", pf_PCD)
     print("Diversidad con PCD para Random Forest", rf_PCD)
     
-    print("-----------------------------------------------")
-    # pf.pruning(X_train, X_test, y_train, y_test)
-    # # pf.accuracy_pruning(X_train, X_test, y_train, y_test, pf_accuracy)
-    # pf.fit(X_train, y_train)
+    # print("-----------------------------------------------")
+    # pf.pruning(X_test, y_test, X_train, y_train)
+    # print('trees 1', len( pf._trees))
     # pf_predictions = pf.predict(X_test)
-    # pf_accuracy = accuracy_score(y_test, pf_predictions)
-    # print('new acurracy', pf_accuracy)
-    # print('trees', len( pf._trees))
-    
-    pf.pruning( X_test, y_test)
-    
-    pf_accuracy = accuracy_score(y_test,pf_predictions)#accuracy para PF
-    print("Instancias correctamente clasificadas para Proactive Forest", pf_accuracy)
+    # pf_accuracy = accuracy_score(y_test,pf_predictions)#accuracy para PF
+    # print("Instancias correctamente clasificadas para Proactive Forest", pf_accuracy)
 
-    pf_PCD = pf.diversity_measure(X_test, y_test, diversity='df')
-    print("Diversidad con PCD para Proactive Forest", pf_PCD)
+    # pf_PCD = pf.diversity_measure(X_test, y_test, diversity='df')
+    # print("Diversidad con PCD para Proactive Forest", pf_PCD)
     
-    tiempo_fin = time.time()
-    duracion = (tiempo_fin - tiempo_inicio)/ 60
-    print(f"La función se ejecutó en {duracion} minutos.")
-    
+    # tiempo_fin = time.time()
+    # duracion = (tiempo_fin - tiempo_inicio)/ 60
+    # print(f"La función se ejecutó en {duracion} minutos.")
+    # print("-----------------------------------------------")
 
     data_save = pd.DataFrame()
     data_save["Resultados PF"] = pd.Series([pf_cmat, pf_recall, pf_auc, pf_accuracy, pf_PCD], 
