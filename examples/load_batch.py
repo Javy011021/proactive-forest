@@ -2,8 +2,9 @@ from examples import load_data
 
 def get_my_batch():
     data = [        
-        # ('letter', load_data.load_letter()), #super largo
-        ('nursery', load_data.load_nursery())
+        ('ionosphere', load_data.load_ionosphere()),
+        ('iris', load_data.load_iris()),
+        ('kr-vs-kp', load_data.load_kr_vs_kp())
     ]
     return data
 
