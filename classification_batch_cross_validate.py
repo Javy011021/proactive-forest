@@ -13,7 +13,7 @@ if __name__ == '__main__':
 
     data = pd.DataFrame()
 
-    for name, loader in load_batch.get_batch_1():
+    for name, loader in load_batch.get_my_batch():
         saver = pd.DataFrame()
         start = time.time()
         data_name = name
@@ -29,7 +29,7 @@ if __name__ == '__main__':
         recall, roc_auc, accracy, pcd, presi = utils.cross_validation_train(fc,train,test)#------> Medida recall y roc_auc efectuando validacion cruzada con k=10
 
         X_train, X_test, y_train, y_test = utils.train_test_splitt(X, y, 0.33)
-        incial_values, final_values = fc.pruning(X_test, y_test, X_train, y_train, pruning="acurracy")
+        incial_values, final_values = fc.pruning(X_test, y_test, X_train, y_train, accuracy=accracy, pruning="acurracy")
         
         recall, roc_auc, accracy, pcd, presi = utils.cross_validation_train(fc,train,test)
         

@@ -769,18 +769,20 @@ class ProactiveForestClassifier(DecisionForestClassifier):
 
         return self
     
-    def pruning(self, X_test, y_test, X_train = None, y_train = None, pruning='parable'):
+    def pruning(self, X_test, y_test, X_train = None, y_train = None, accuracy = None, pruning='parable'):
         if pruning  == 'acurracy':
-            return self.accuracy_pruning(X_test, y_test)
+            return self.accuracy_pruning(X_test, y_test, accuracy=accuracy)
         elif pruning  == 'parable':
             return self.parable_pruning(X_train , y_train, X_test, y_test) 
         else:
             return super().pruning(X_test, y_test, pruning)
     
-    def accuracy_pruning(self, X_test, y_test, limit = 50):
+    def accuracy_pruning(self, X_test, y_test, accuracy = None, limit = 10):
         predictors = self._trees
         initial_len = len(predictors)
-        accuracy = accuracy_score(y_test, self.predict(X_test))
+        if not accuracy:
+            accuracy = accuracy_score(y_test, self.predict(X_test))
+        initial_accuracy = accuracy
         
         n=1
         while len(predictors) > limit:
@@ -799,10 +801,13 @@ class ProactiveForestClassifier(DecisionForestClassifier):
                     min_delta_tree = i  
                     best_accuracy = pf_accuracy
             
-            n+=1     
-            if min_delta_tree != None:               
-                predictors = [tree for j, tree in enumerate(predictors) if j != min_delta_tree]
-                accuracy = best_accuracy
+            n+=1 
+            if initial_accuracy <= best_accuracy:
+                if min_delta_tree != None:               
+                    predictors = [tree for j, tree in enumerate(predictors) if j != min_delta_tree]
+                    accuracy = best_accuracy
+            else:
+                break
             
         self._trees = predictors
         return initial_len, len(predictors)
