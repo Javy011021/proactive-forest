@@ -29,7 +29,7 @@ if __name__ == '__main__':
         recall, roc_auc, accracy, pcd, presi = utils.cross_validation_train(fc,train,test)#------> Medida recall y roc_auc efectuando validacion cruzada con k=10
 
         X_train, X_test, y_train, y_test = utils.train_test_splitt(X, y, 0.33)
-        incial_values, final_values = fc.pruning(X_test, y_test, X_train, y_train, accuracy=accracy, pruning="acurracy")
+        incial_values, final_values = fc.pruning(X_test, y_test, X_train, y_train, accuracy=accracy, pruning="depth")
         
         recall, roc_auc, accracy, pcd, presi = utils.cross_validation_train(fc,train,test)
         
