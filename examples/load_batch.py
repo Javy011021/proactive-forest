@@ -12,32 +12,32 @@ def get_my_batch():
 
 def get_batch_1():
     data = [
-        # ('balance_scale', load_data.load_balance_scale()),
-        # ('car', load_data.load_car()),
-        # ('cmc', load_data.load_cmc()),
-        # ('credit-g', load_data.load_credit()),
-        # ('diabetes', load_data.load_diabetes())
+        ('balance_scale', load_data.load_balance_scale()),
+        ('car', load_data.load_car()),
+        ('cmc', load_data.load_cmc()),
+        ('credit-g', load_data.load_credit()),
+        ('diabetes', load_data.load_diabetes())
     ]
     return data
 
 
 def get_batch_2():
     data = [
-        # ('ecoli', load_data.load_ecoli()),
-        # ('flags', load_data.load_flags()),
-        # ('glass', load_data.load_glass()),
-        # ('haberman', load_data.load_haberman()),
-        # ('heart-statlog', load_data.load_heart_statlog())
+        ('ecoli', load_data.load_ecoli()),
+        ('flags', load_data.load_flags()),
+        ('glass', load_data.load_glass()),
+        ('haberman', load_data.load_haberman()),
+        ('heart-statlog', load_data.load_heart_statlog())
     ]
     return data
 
 
 def get_batch_3():
     data = [
-        # ('ionosphere', load_data.load_ionosphere()),
-        # ('iris', load_data.load_iris()),
-        # ('kr-vs-kp', load_data.load_kr_vs_kp()),
-        # ('letter', load_data.load_letter()),
+        ('ionosphere', load_data.load_ionosphere()),
+        ('iris', load_data.load_iris()),
+        ('kr-vs-kp', load_data.load_kr_vs_kp()),
+        ('letter', load_data.load_letter()),
         ('liver', load_data.load_liver_disorder())
     ]
     return data
@@ -56,10 +56,10 @@ def get_batch_4():
 
 def get_batch_5():
     data = [
-        # ('pendigits', load_data.load_pendigits()),
-        # ('segment', load_data.load_segment()),
+        ('pendigits', load_data.load_pendigits()),
+        ('segment', load_data.load_segment()),
         ('solar_flare1', load_data.load_solar_flare1()),
-        # ('solar_flare2', load_data.load_solar_flare2()),
+        ('solar_flare2', load_data.load_solar_flare2()),
         ('sonar', load_data.load_sonar())
     ]
     return data
@@ -67,11 +67,11 @@ def get_batch_5():
 
 def get_batch_6():
     data = [
-        # ('spambase', load_data.load_spambase()),
-        # ('splice', load_data.load_splice()),
-        # ('tae', load_data.load_tae()),
-        # ('vehicle', load_data.load_vehicle()),
-        # ('vowel', load_data.load_vowel())
+        ('spambase', load_data.load_spambase()),
+        ('splice', load_data.load_splice()),
+        ('tae', load_data.load_tae()),
+        ('vehicle', load_data.load_vehicle()),
+        ('vowel', load_data.load_vowel())
     ]
     return data
 
