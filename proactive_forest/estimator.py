@@ -638,14 +638,13 @@ class DecisionForestClassifier(BaseEstimator, ClassifierMixin):
      
            
     def pruning(self, X_test, y_test, pruning='error'):
-        if pruning  == 'depth':
-            return self.depth_prune(X_test, y_test)
-        elif pruning  == 'error':
-            return self.trees_reduce_prune(X_test, y_test)
-        # elif pruning  == 'parable':
-        #     return self.parable_pruning(X_train , y_train, X_test, y_test) 
-        else:
-            raise ValueError("It was not possible to recognize the pruning method.")
+        start_nodes = 0
+        end_nodes = 0
+        for i in self._trees:
+            start_nodes += len(i.nodes)
+            i.prune(X_test, y_test, self._encoder, pruning)
+            end_nodes += len(i.nodes)    
+        return start_nodes, end_nodes
         
     
     def depth_prune(self, X_test, y_test):

@@ -2,7 +2,9 @@ from abc import ABC, abstractmethod
 import numpy as np
 from sklearn.base import check_array
 from sklearn.exceptions import NotFittedError
-from sklearn.metrics import accuracy_score 
+from sklearn.metrics import accuracy_score
+
+from proactive_forest.pruning import DepthPruning, ReduceErrorPruning 
 
 class DecisionTree:
     def __init__(self, n_features):
@@ -298,7 +300,28 @@ class DecisionTree:
                 self.nodes = changedNodes[maxindex]
                 self.last_node_id = len(changedNodes[maxindex])
                 self._order_branchs(self.nodes)
-                self.reduce_prune(X, y, encoder)                   
+                self.reduce_prune(X, y, encoder)    
+                
+    def prune(self, X, y, encoder, pruning='error'):
+        """
+        Prunning tree function.
+
+        :param X: <numpy ndarray> An array containing the feature vectors
+        :param y: <numpy array> An array containing the target features
+        :param encoder: <LabelEncoder> Encoder used for the labels
+        :param pruning: <string> The type of pruning to be done
+        """
+        if pruning == 'error':
+            method = ReduceErrorPruning()
+            # return self.reduce_prune(X, y, encoder)
+        elif pruning == 'depth':
+            method = DepthPruning()
+            # return self.depth_prune(X, y, encoder)
+        else:
+            raise ValueError("It was not possible to recognize the pruning method.")
+        
+        tree_pruning = method.pruning(self, X, y, encoder)
+        return tree_pruning
              
 
 class DecisionNode(ABC):

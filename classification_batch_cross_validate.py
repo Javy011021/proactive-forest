@@ -13,9 +13,8 @@ if __name__ == '__main__':
 
     data = pd.DataFrame()
 
-    for name, loader in load_batch.get_my_batch():
+    for name, loader in load_batch.get_batch_1():
         saver = pd.DataFrame()
-        start = time.time()
         data_name = name
         X, y = loader[0], loader[1]
 
@@ -29,10 +28,10 @@ if __name__ == '__main__':
         recall, roc_auc, accracy, pcd, presi = utils.cross_validation_train(fc,train,test)#------> Medida recall y roc_auc efectuando validacion cruzada con k=10
 
         X_train, X_test, y_train, y_test = utils.train_test_splitt(X, y, 0.33)
-        incial_values, final_values = fc.pruning(X_test, y_test, X_train, y_train, accuracy=accracy, pruning="depth")
+        incial_values, final_values = fc.pruning(X_test, y_test, pruning="depth")
         
+        start = time.time()
         recall, roc_auc, accracy, pcd, presi = utils.cross_validation_train(fc,train,test)
-        
         end = time.time()
         duration = (end-start) / 60
         print(f'The function was executed in {duration} minutes.')
