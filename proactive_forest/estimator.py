@@ -4,6 +4,7 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.utils import check_X_y, check_array
 from sklearn.exceptions import NotFittedError
 from sklearn.metrics import accuracy_score
+from proactive_forest.pruning import AccuracyPruning, EROSbPruning
 from proactive_forest.tree import DecisionLeaf
 import proactive_forest.utils as utils
 from proactive_forest.diversity import PercentageCorrectDiversity, QStatisticDiversity, Variance_KWDiversity, EntropyDiversity, KagreementDiversity, DoubleFaultDiversity, DisagreementDiversity, FeatureImportancesDiversity, SelectedFeaturesDiversity, StructuralDiversity, FeatureImportancesByLevelDiversity
@@ -751,13 +752,25 @@ class ProactiveForestClassifier(DecisionForestClassifier):
 
         return self
     
-    def pruning(self, X_test, y_test, X_train = None, y_train = None, accuracy = None, pruning='parable'):
-        if pruning  == 'acurracy':
-            return self.accuracy_pruning(X_test, y_test, accuracy=accuracy)
-        elif pruning  == 'parable':
-            return self.parable_pruning(X_train , y_train, X_test, y_test) 
+    
+    def pruning(self, X_test, y_test, accuracy = None, pruning='eros'):
+        if pruning  == 'accuracy':
+            method = AccuracyPruning()
+        elif pruning  == 'eros':
+            method = EROSbPruning() 
         else:
             return super().pruning(X_test, y_test, pruning)
+        
+        tree_pruning = method.pruning(self, X_test, y_test,accuracy)
+        return tree_pruning
+    
+    # def pruning(self, X_test, y_test, X_train = None, y_train = None, accuracy = None, pruning='eros'):
+    #     if pruning  == 'acurracy':
+    #         return self.accuracy_pruning(X_test, y_test, accuracy=accuracy)
+    #     elif pruning  == 'eros':
+    #         return self.parable_pruning(X_train , y_train, X_test, y_test) 
+    #     else:
+    #         return super().pruning(X_test, y_test, pruning)
     
     def accuracy_pruning(self, X_test, y_test, accuracy = None, limit = 10):
         predictors = self._trees

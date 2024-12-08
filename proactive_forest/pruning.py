@@ -80,3 +80,80 @@ class DepthPruning(TreePruning):
             predictor.nodes = changedNodes[maxindex]
             predictor.last_node_id = len(changedNodes[maxindex])
             predictor._order_branchs(predictor.nodes)
+            
+
+        
+class ForestPruning(Pruning):
+    @abstractmethod
+    def pruning(self, predictor, X, y, X_train = None, y_train = None, accuracy = None):
+        pass
+
+class AccuracyPruning(ForestPruning):
+    
+    def pruning(self, predictor, X, y, accuracy=None):
+        limit=10
+        predictors = predictor._trees
+        initial_len = len(predictors)
+        if not accuracy:
+            accuracy = accuracy_score(y, predictor.predict(X))
+        initial_accuracy = accuracy
+        
+        n=1
+        while len(predictors) > limit:
+            min_delta = 100
+            min_delta_tree = None
+            best_accuracy = None
+            print('tree', n)
+            for i in range(len(predictors)):
+                predictor._trees = [tree for j, tree in enumerate(predictors) if j != i]                               
+                predictions = predictor.predict(X)
+                pf_accuracy = accuracy_score(y, predictions)
+                                    
+                delta_T = accuracy - pf_accuracy                
+                if delta_T < min_delta:
+                    min_delta = delta_T
+                    min_delta_tree = i  
+                    best_accuracy = pf_accuracy
+            
+            n+=1 
+            if initial_accuracy <= best_accuracy:
+                if min_delta_tree != None:               
+                    predictors = [tree for j, tree in enumerate(predictors) if j != min_delta_tree]
+                    accuracy = best_accuracy
+            else:
+                break
+            
+        predictor._trees = predictors
+        return initial_len, len(predictors)
+    
+    
+class EROSbPruning(ForestPruning):
+    
+    def pruning(self, predictor, X, y, accuracy=None):
+        predictors = predictor._trees
+        initial_len = len(predictors)
+        accuracy_list = []
+            
+        for i in predictors:
+            result = predictor._predict_on_tree(X, i)
+            predictions = predictor._encoder.inverse_transform(result)
+            pf_accuracy = accuracy_score(y, predictions)
+            accuracy_list.append({i: pf_accuracy})
+        
+        accuracy_list.sort(key=lambda x: list(x.values())[0], reverse=True)
+            
+        trees = []
+        before_pf_accuracy = 0
+        n=1
+        for i in accuracy_list:
+            trees.append(list(i.keys())[0])
+            predictor._trees = trees            
+            predictions = predictor.predict(X)
+            pf_accuracy = accuracy_score(y, predictions)  
+            if pf_accuracy < before_pf_accuracy :
+                trees.pop()
+            before_pf_accuracy = pf_accuracy
+            n += 1
+        
+        predictor._trees = trees
+        return initial_len, len(trees)
