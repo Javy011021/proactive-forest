@@ -1,11 +1,11 @@
 from examples import load_data
 
 def get_my_batch():
-    data = [
-        ('iris', load_data.load_iris()),
-        # ('tae', load_data.load_tae()),
-        # ('car', load_data.load_car()),
-        # ('cmc', load_data.load_cmc()),
+    data = [        
+        # ('ionosphere', load_data.load_ionosphere()),
+        # ('iris', load_data.load_iris()),
+        ('nursery', load_data.load_nursery()),
+        # ('kr-vs-kp', load_data.load_kr_vs_kp())
     ]
     return data
 
@@ -34,16 +34,11 @@ def get_batch_2():
 
 def get_batch_3():
     data = [
-        #('lymph', load_data.load_lymph()),
-        #('balance_scale', load_data.load_balance_scale()),
-        #('cmc', load_data.load_cmc()),
-        #('ionosphere', load_data.load_ionosphere()),
-        #('glass', load_data.load_glass()),
-        #('iris', load_data.load_iris()),
-        #('kr-vs-kp', load_data.load_kr_vs_kp()),
-        #('letter', load_data.load_letter()),
-        #('liver', load_data.load_liver_disorder())
-        ('diabetes', load_data.load_diabetes()),
+        ('ionosphere', load_data.load_ionosphere()),
+        ('iris', load_data.load_iris()),
+        ('kr-vs-kp', load_data.load_kr_vs_kp()),
+        ('letter', load_data.load_letter()),
+        ('liver', load_data.load_liver_disorder())
     ]
     return data
 
