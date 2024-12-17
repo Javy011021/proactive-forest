@@ -17,7 +17,14 @@ class TreePruning(Pruning):
 class ReduceErrorPruning(TreePruning):
 
     def pruning(self, predictor, X, y, encoder):
-        """Reduced error pruning function."""
+        """Reduced error pruning function.
+
+        :param predictor: <DecisionTree> The decision tree to be pruned
+        :param X: <numpy ndaray> Feature vectors
+        :param y: <numpy array> Target feature
+        :param encoder: <LabelEncoder> Encoder used for the labels
+        :return: <None>
+        """
 
         changed_nodes = []
         accuracy_list = []
@@ -52,7 +59,14 @@ class ReduceErrorPruning(TreePruning):
 class DepthPruning(TreePruning):
 
     def pruning(self, predictor, X, y, encoder):
-        """Depth-based pruning function."""
+        """Depth-based pruning function.
+
+        :param predictor: <DecisionTree> The decision tree to be pruned
+        :param X: <numpy ndaray> Feature vectors
+        :param y: <numpy array> Target feature
+        :param encoder: <LabelEncoder> Encoder used for the labels
+        :return: <None>
+        """
 
         dmax = [5, 10, 15, 20, 50, 100]
         changed_nodes = []
@@ -95,6 +109,15 @@ class ForestPruning(Pruning):
 class AccuracyPruning(ForestPruning):
 
     def pruning(self, predictor, X, y, accuracy=None):
+        """Accuracy-based pruning function.
+
+        :param predictor: <ProactiveForestClassifier> The decision forest to be pruned
+        :param X: <numpy ndaray> Feature vectors
+        :param y: <numpy array> Target feature
+        :param accuracy: <float> Accuracy of the forest
+        :return: <list> Number of initial and final trees
+        """
+
         limit = 10
         predictors = predictor._trees
         initial_len = len(predictors)
@@ -136,6 +159,15 @@ class AccuracyPruning(ForestPruning):
 class EROSbPruning(ForestPruning):
 
     def pruning(self, predictor, X, y, accuracy=None):
+        """Version EROS pruning function.
+
+        :param predictor: <ProactiveForestClassifier> The decision forest to be pruned
+        :param X: <numpy ndaray> Feature vectors
+        :param y: <numpy array> Target feature
+        :param accuracy: <float> Accuracy of the forest
+        :return: <list> Number of initial and final trees
+        """
+
         predictors = predictor._trees
         initial_len = len(predictors)
         accuracy_list = []

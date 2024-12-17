@@ -768,6 +768,14 @@ class ProactiveForestClassifier(DecisionForestClassifier):
         return self
 
     def pruning(self, X_test, y_test, accuracy=None, pruning='eros'):
+        """
+        Prunning forest function.
+
+        :param X: <numpy ndarray> An array containing the feature vectors
+        :param y: <numpy array> An array containing the target features
+        :param accuracy: <float> The accuracy of the forest
+        :param pruning: <string> The type of pruning to be done
+        """
         if pruning == 'accuracy':
             method = AccuracyPruning()
         elif pruning == 'eros':
