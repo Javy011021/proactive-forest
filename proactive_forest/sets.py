@@ -52,7 +52,8 @@ class BaggingSet(SetGenerator):
         :return: <numpy array>
         """
         if self._set_ids is None:
-            self._set_ids = np.random.choice(self._n_instances, replace=True, size=self._n_instances)
+            self._set_ids = np.random.choice(
+                self._n_instances, replace=True, size=self._n_instances)
         return self._set_ids
 
     def oob_ids(self):

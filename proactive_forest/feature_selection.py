@@ -39,7 +39,8 @@ class LogFeatureSelection(FeatureSelection):
         """
         sample_size = int(np.math.floor(np.math.log2(n_features)) + 1)
         population = list(range(n_features))
-        selected = np.random.choice(population, replace=False, size=sample_size, p=prob)
+        selected = np.random.choice(
+            population, replace=False, size=sample_size, p=prob)
         return selected
 
 
@@ -59,7 +60,8 @@ class ProbFeatureSelection(FeatureSelection):
         """
         sample_size = n_features
         population = list(range(n_features))
-        selected = np.random.choice(population, replace=True, size=sample_size, p=prob)
+        selected = np.random.choice(
+            population, replace=True, size=sample_size, p=prob)
         return np.unique(selected)
 
 

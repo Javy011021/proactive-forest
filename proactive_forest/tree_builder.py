@@ -43,7 +43,7 @@ class TreeBuilder:
         if max_depth is None or max_depth > 0:
             self._max_depth = max_depth
         else:
-            raise(ValueError("The depth of the tree must be greater than 0."))
+            raise (ValueError("The depth of the tree must be greater than 0."))
 
         if split_criterion is not None:
             self._split_criterion = split_criterion
@@ -63,17 +63,17 @@ class TreeBuilder:
         if min_samples_split is not None and min_samples_split > 1:
             self._min_samples_split = min_samples_split
         else:
-            raise(ValueError("The min_samples_split must be greater than 1."))
+            raise (ValueError("The min_samples_split must be greater than 1."))
 
         if min_samples_leaf is not None and min_samples_leaf > 0:
             self._min_samples_leaf = min_samples_leaf
         else:
-            raise(ValueError("The min_samples_leaf must be greater than 0."))
+            raise (ValueError("The min_samples_leaf must be greater than 0."))
 
         if min_gain_split is not None and min_gain_split >= 0:
             self._min_gain_split = min_gain_split
         else:
-            raise(ValueError("The min_gain_split must be greater or equal than 0."))
+            raise (ValueError("The min_gain_split must be greater or equal than 0."))
 
         if feature_prob is not None:
             self._feature_prob = feature_prob
@@ -163,7 +163,8 @@ class TreeBuilder:
             self._feature_prob = [initial_prob for _ in range(n_features)]
         else:
             if len(self._feature_prob) != n_features:
-                raise ValueError('The number of features does not match the given probabilities list.')
+                raise ValueError(
+                    'The number of features does not match the given probabilities list.')
 
         tree = DecisionTree(n_features=n_features)
         tree.last_node_id = tree.root()
@@ -205,34 +206,40 @@ class TreeBuilder:
         if leaf_reached:
             samples = utils.bin_count(y, length=self._n_classes)
             result = np.argmax(samples)
-            new_leaf = DecisionLeaf(samples=samples, depth=depth, result=result)
+            new_leaf = DecisionLeaf(
+                samples=samples, depth=depth, result=result)
             tree.nodes.append(new_leaf)
 
         else:
-            is_categorical = utils.categorical_data(X[:, best_split.feature_id])
+            is_categorical = utils.categorical_data(
+                X[:, best_split.feature_id])
             samples = utils.bin_count(y, length=self._n_classes)
 
             if is_categorical:
                 new_fork = DecisionForkCategorical(samples=samples, depth=depth,
                                                    feature_id=best_split.feature_id, value=best_split.value,
                                                    gain=best_split.gain)
-                X_left, X_right, y_left, y_right = split_categorical_data(X, y, best_split.feature_id, best_split.value)
+                X_left, X_right, y_left, y_right = split_categorical_data(
+                    X, y, best_split.feature_id, best_split.value)
 
             else:
                 new_fork = DecisionForkNumerical(samples=samples, depth=depth,
                                                  feature_id=best_split.feature_id, value=best_split.value,
                                                  gain=best_split.gain)
-                X_left, X_right, y_left, y_right = split_numerical_data(X, y, best_split.feature_id, best_split.value)
+                X_left, X_right, y_left, y_right = split_numerical_data(
+                    X, y, best_split.feature_id, best_split.value)
 
             tree.nodes.append(new_fork)
             tree.last_node_id += 1
             node_to_split = tree.last_node_id
-            new_branch = self._build_tree_recursive(tree, node_to_split, X_left, y_left, depth=depth+1)
+            new_branch = self._build_tree_recursive(
+                tree, node_to_split, X_left, y_left, depth=depth+1)
             tree.nodes[cur_node].left_branch = new_branch
 
             tree.last_node_id += 1
             node_to_split = tree.last_node_id
-            new_branch = self._build_tree_recursive(tree, node_to_split, X_right, y_right, depth=depth+1)
+            new_branch = self._build_tree_recursive(
+                tree, node_to_split, X_right, y_right, depth=depth+1)
             tree.nodes[cur_node].right_branch = new_branch
 
         return cur_node
@@ -249,7 +256,8 @@ class TreeBuilder:
         splits_info = []
 
         # Select features to consider
-        features = self._feature_selection.get_features(n_features, self._feature_prob)
+        features = self._feature_selection.get_features(
+            n_features, self._feature_prob)
 
         # Get candidate splits
         for feature_id in features:

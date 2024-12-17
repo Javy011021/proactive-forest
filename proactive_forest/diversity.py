@@ -1,10 +1,8 @@
 from abc import ABC, abstractmethod
-
 import numpy
 import numpy as np
 import math
 from proactive_forest.tree import DecisionLeaf, DecisionFork
-from sklearn.metrics.pairwise import cosine_similarity
 
 
 class DiversityMeasure(ABC):
@@ -152,11 +150,13 @@ class DoubleFaultDiversity(DiversityMeasure):
         n_instances = X.shape[0]  # Número de instancias
         n_predictors = len(predictors)  # Número de clasificadores
 
-        diversity_matrix = np.zeros((n_predictors, n_predictors))  # Matriz de diversidad por pares para los árboles del bosque de decisión
+        # Matriz de diversidad por pares para los árboles del bosque de decisión
+        diversity_matrix = np.zeros((n_predictors, n_predictors))
         total = 0
         for i in range(0, n_predictors-1):
             for j in range(i+1, n_predictors):
-                matrix = np.zeros((2, 2))  # Matriz de relación en la clasificación por pares de árboles ij
+                # Matriz de relación en la clasificación por pares de árboles ij
+                matrix = np.zeros((2, 2))
 
                 for n in range(n_instances):
                     n_target = y[n]
@@ -174,7 +174,9 @@ class DoubleFaultDiversity(DiversityMeasure):
                         else:
                             matrix[0][0] += 1
 
-                div = matrix[0][0] / (matrix[0][1] + matrix[1][0] + matrix[0][0] + matrix[1][1]) # Se calcula la proporción de casos que han sido mal clasificados por ambos clasificadores
+                # Se calcula la proporción de casos que han sido mal clasificados por ambos clasificadores
+                div = matrix[0][0] / (matrix[0][1] + matrix[1]
+                                      [0] + matrix[0][0] + matrix[1][1])
                 diversity_matrix[i][j] = div
 
         for i in range(0, n_predictors - 1):
@@ -200,7 +202,8 @@ class DisagreementDiversity(DiversityMeasure):
         total = 0
         for i in range(0, n_predictors-1):
             for j in range(i+1, n_predictors):
-                matrix = np.zeros((2, 2))  # Matriz de relación en la clasificación por pares de árboles ij
+                # Matriz de relación en la clasificación por pares de árboles ij
+                matrix = np.zeros((2, 2))
 
                 for n in range(n_instances):
                     n_target = y[n]
@@ -218,7 +221,8 @@ class DisagreementDiversity(DiversityMeasure):
                         else:
                             matrix[0][0] += 1
 
-                dij = (matrix[0][1] + matrix[1][0]) / (matrix[0][1] + matrix[1][0] + matrix[0][0] + matrix[1][1])
+                dij = (matrix[0][1] + matrix[1][0]) / (matrix[0]
+                                                       [1] + matrix[1][0] + matrix[0][0] + matrix[1][1])
                 total += dij
         diversity = 2 * total / (n_predictors * (n_predictors - 1))
         return diversity
@@ -238,7 +242,8 @@ class KagreementDiversity(DiversityMeasure):
         n_instances = X.shape[0]  # Número de instancias
         n_predictors = len(predictors)  # Número de clasificadores
         total = 0
-        t_true_positive = 0  # Número total de clasificadores que clasifican correctamente cada instancias
+        # Número total de clasificadores que clasifican correctamente cada instancias
+        t_true_positive = 0
         for i in range(n_instances):
             instance, target = X[i], y[i]
             true_positive = 0   # Número de clasificadores que clasifican correctamente la instancia
@@ -250,9 +255,11 @@ class KagreementDiversity(DiversityMeasure):
             total += kij
             t_true_positive += true_positive
 
-        accuracy = t_true_positive / (n_instances * n_predictors)  # Precisión promedio de los clasificadores
+        # Precisión promedio de los clasificadores
+        accuracy = t_true_positive / (n_instances * n_predictors)
 
-        diversity = 1 - ((total / n_predictors) / (n_instances * (n_predictors - 1) * accuracy * (1 - accuracy)))
+        diversity = 1 - ((total / n_predictors) / (n_instances *
+                         (n_predictors - 1) * accuracy * (1 - accuracy)))
         return diversity
 
 
@@ -299,7 +306,8 @@ class SelectedFeaturesDiversity(DiversityMeasure):
         # arreglo tridimensional donde cada elemento representa para un árbol una matriz con la relación entre los
         # niveles y las características utilizadas en cada nivel
         tree_array = []
-        tree_depth_array = np.zeros(n_predictors, int) # arreglo con la altura de cada árbol
+        # arreglo con la altura de cada árbol
+        tree_depth_array = np.zeros(n_predictors, int)
 
         for i in range(0, n_predictors):
             predict = predictors[i]
@@ -311,14 +319,17 @@ class SelectedFeaturesDiversity(DiversityMeasure):
                     tree_depth = node.depth
 
             tree_depth_array[i] = tree_depth
-            tree_array.append(np.zeros((tree_depth - 1, predict.n_features), int))  # -1 porque la raiz tiene nivel 1
+            # -1 porque la raiz tiene nivel 1
+            tree_array.append(
+                np.zeros((tree_depth - 1, predict.n_features), int))
             # Se determinan las características seleccionadas como criterios de división en cada nivel del árbol
             for n in node_list:
                 if isinstance(n, DecisionFork):
                     feature = n.feature_id
                     depth = n.depth
                     if tree_array[i][depth - 1][feature] == 0:
-                        tree_array[i][depth - 1][feature] += 1  # -1 porque la raiz tiene nivel 1
+                        # -1 porque la raiz tiene nivel 1
+                        tree_array[i][depth - 1][feature] += 1
 
         for i in range(0, n_predictors - 1):
             features_tree_i = tree_array[i]
@@ -332,7 +343,8 @@ class SelectedFeaturesDiversity(DiversityMeasure):
                 for k in range(0, min_depth - 1):
                     if (features_tree_i[k] == features_tree_j[k]).all():
                         levels_count += 1
-                total += levels_count / (total_levels - levels_count)  # índice de Jaccard
+                total += levels_count / \
+                    (total_levels - levels_count)  # índice de Jaccard
 
         diversity = 2 * total / (n_predictors * (n_predictors - 1))
         return diversity
@@ -368,7 +380,7 @@ class StructuralDiversity(DiversityMeasure):
             i_predict = predictors[i]
             for j in range(i + 1, n_predictors):
                 j_predict = predictors[j]
-                if i_predict.total_splits() == j_predict.total_splits() and i_predict.total_leaves() == j_predict.total_leaves() and tree_depth_array[i]==tree_depth_array[j]:
+                if i_predict.total_splits() == j_predict.total_splits() and i_predict.total_leaves() == j_predict.total_leaves() and tree_depth_array[i] == tree_depth_array[j]:
                     total += 1
 
         diversity = 2 * total / (n_predictors * (n_predictors - 1))
@@ -401,13 +413,17 @@ class FeatureImportancesByLevelDiversity(DiversityMeasure):
                     tree_depth = node.depth
 
             tree_depth_array[i] = tree_depth
-            tree_array.append(np.zeros((tree_depth - 1, predict.n_features), float))  # -1 porque la raiz tiene nivel 1
+            # -1 porque la raiz tiene nivel 1
+            tree_array.append(
+                np.zeros((tree_depth - 1, predict.n_features), float))
 
             for n in node_list:
                 if isinstance(n, DecisionFork):
                     feature = n.feature_id
                     depth = n.depth
-                    tree_array[i][depth - 1][feature] += n.gain * np.sum(n.samples) / np.sum(node_list[predict.root()].samples)
+                    tree_array[i][depth - 1][feature] += n.gain * \
+                        np.sum(n.samples) / \
+                        np.sum(node_list[predict.root()].samples)
 
             for level in range(0, tree_depth-1):
                 normalizer = np.sum(tree_array[i][level])
@@ -428,7 +444,8 @@ class FeatureImportancesByLevelDiversity(DiversityMeasure):
                     # Si la característica de mayor importancia es la misma en ese nivel del árbol
                     if np.argmax(features_tree_i[k]) == np.argmax(features_tree_j[k]):
                         levels_count += 1
-                total += levels_count / (total_levels - levels_count)  # índice de Jaccard
+                total += levels_count / \
+                    (total_levels - levels_count)  # índice de Jaccard
 
         diversity = 2 * total / (n_predictors * (n_predictors - 1))
         return diversity
