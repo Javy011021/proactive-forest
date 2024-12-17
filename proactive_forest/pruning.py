@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
 from sklearn.metrics import accuracy_score
-# from proactive_forest.tree import DecisionLeaf
 
 
 class Pruning(ABC):
@@ -20,32 +19,32 @@ class ReduceErrorPruning(TreePruning):
     def pruning(self, predictor, X, y, encoder):
         """Reduced error pruning function."""
 
-        changedNodes = []
-        accuracyList = []
-        originNodes = predictor.nodes.copy()
-        setAccuracy = accuracy_score(
+        changed_nodes = []
+        accuracy_list = []
+        origin_nodes = predictor.nodes.copy()
+        set_accuracy = accuracy_score(
             y, encoder.inverse_transform(predictor.predict_list(X)))
 
-        for i in range(len(originNodes)):
-            if originNodes[i].__class__.__name__ != 'DecisionLeaf':
-                nodeList = originNodes.copy()
-                nodeList[i] = predictor._convert_to_leaf(nodeList[i])
-                nodeList = predictor._delete_node_brachs(nodeList, i)
-                predictor._order_branchs(nodeList)
-                predictor.nodes = nodeList
-                predictor.last_node_id = len(nodeList)
+        for i in range(len(origin_nodes)):
+            if origin_nodes[i].__class__.__name__ != 'DecisionLeaf':
+                node_list = origin_nodes.copy()
+                node_list[i] = predictor._convert_to_leaf(node_list[i])
+                node_list = predictor._delete_node_brachs(node_list, i)
+                predictor._order_branchs(node_list)
+                predictor.nodes = node_list
+                predictor.last_node_id = len(node_list)
 
-                changedNodes.append(nodeList)
-                dAcc = accuracy_score(
+                changed_nodes.append(node_list)
+                dacc = accuracy_score(
                     y, encoder.inverse_transform(predictor.predict_list(X)))
-                accuracyList.append(dAcc)
+                accuracy_list.append(dacc)
 
-        if len(accuracyList) != 0:
-            maximum = max(accuracyList)
-            maxindex = accuracyList.index(maximum)
-            if setAccuracy <= maximum:
-                predictor.nodes = changedNodes[maxindex]
-                predictor.last_node_id = len(changedNodes[maxindex])
+        if len(accuracy_list) != 0:
+            maximum = max(accuracy_list)
+            max_index = accuracy_list.index(maximum)
+            if set_accuracy <= maximum:
+                predictor.nodes = changed_nodes[max_index]
+                predictor.last_node_id = len(changed_nodes[max_index])
                 predictor._order_branchs(predictor.nodes)
                 predictor.reduce_prune(X, y, encoder)
 
@@ -56,40 +55,40 @@ class DepthPruning(TreePruning):
         """Depth-based pruning function."""
 
         dmax = [5, 10, 15, 20, 50, 100]
-        changedNodes = []
-        accuracyList = []
-        originNodes = predictor.nodes.copy()
-        setAccuracy = accuracy_score(
+        changed_nodes = []
+        accuracy_list = []
+        origin_nodes = predictor.nodes.copy()
+        set_accuracy = accuracy_score(
             y, encoder.inverse_transform(predictor.predict_list(X)))
 
         for i in dmax:
-            nodeList = []
-            for j in range(len(originNodes)):
-                node = originNodes[j]
+            node_list = []
+            for j in range(len(origin_nodes)):
+                node = origin_nodes[j]
                 if node.depth < i:
-                    nodeList.append(node)
+                    node_list.append(node)
                 elif node.depth == i:
-                    nodeList.append(predictor._convert_to_leaf(node))
-            predictor._order_branchs(nodeList)
-            predictor.nodes = nodeList
-            predictor.last_node_id = len(nodeList)
+                    node_list.append(predictor._convert_to_leaf(node))
+            predictor._order_branchs(node_list)
+            predictor.nodes = node_list
+            predictor.last_node_id = len(node_list)
 
-            changedNodes.append(nodeList)
-            dAcc = accuracy_score(
+            changed_nodes.append(node_list)
+            dacc = accuracy_score(
                 y, encoder.inverse_transform(predictor.predict_list(X)))
-            accuracyList.append(dAcc)
+            accuracy_list.append(dacc)
 
-        maximum = max(accuracyList)
-        maxindex = accuracyList.index(maximum)
-        if setAccuracy <= maximum:
-            predictor.nodes = changedNodes[maxindex]
-            predictor.last_node_id = len(changedNodes[maxindex])
+        maximum = max(accuracy_list)
+        max_index = accuracy_list.index(maximum)
+        if set_accuracy <= maximum:
+            predictor.nodes = changed_nodes[max_index]
+            predictor.last_node_id = len(changed_nodes[max_index])
             predictor._order_branchs(predictor.nodes)
 
 
 class ForestPruning(Pruning):
     @abstractmethod
-    def pruning(self, predictor, X, y, X_train=None, y_train=None, accuracy=None):
+    def pruning(self, predictor, X, y, accuracy=None):
         pass
 
 

@@ -5,7 +5,6 @@ from sklearn.utils import check_X_y, check_array
 from sklearn.exceptions import NotFittedError
 from sklearn.metrics import accuracy_score
 from proactive_forest.pruning import AccuracyPruning, EROSbPruning
-from proactive_forest.tree import DecisionLeaf
 import proactive_forest.utils as utils
 from proactive_forest.diversity import PercentageCorrectDiversity, QStatisticDiversity, Variance_KWDiversity, EntropyDiversity, KagreementDiversity, DoubleFaultDiversity, DisagreementDiversity, FeatureImportancesDiversity, SelectedFeaturesDiversity, StructuralDiversity, FeatureImportancesByLevelDiversity
 from proactive_forest.tree_builder import TreeBuilder
