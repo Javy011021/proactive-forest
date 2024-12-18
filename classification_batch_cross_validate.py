@@ -18,33 +18,36 @@ if __name__ == '__main__':
         data_name = name
         X, y = loader[0], loader[1]
 
-        fc = ProactiveForestClassifier(alpha=0.1)#para ejecutar proactive forest------->COMENTAR EL ALGORITMO QUE NO SE VALLA A UTILIZAR
-        #fc = DecisionForestClassifier()#para ejecutar random forest
-
-        # train, test = utils.create_one(X.to_numpy(), y.to_numpy())
-        # recall, roc_auc, accracy, pcd, presi = utils.validation_train(fc,train,test)
+        # para ejecutar proactive forest------->COMENTAR EL ALGORITMO QUE NO SE VALLA A UTILIZAR
+        fc = ProactiveForestClassifier(alpha=0.1)
+        # fc = DecisionForestClassifier()#para ejecutar random forest
 
         train, test = utils.create_k(X.to_numpy(), y.to_numpy(), k=10)
-        recall, roc_auc, accracy, pcd, presi = utils.cross_validation_train(fc,train,test)#------> Medida recall y roc_auc efectuando validacion cruzada con k=10
+        # ------> Medida recall y roc_auc efectuando validacion cruzada con k=10
+        recall, roc_auc, accracy, pcd, presi = utils.cross_validation_train(
+            fc, train, test)
 
         X_train, X_test, y_train, y_test = utils.train_test_splitt(X, y, 0.33)
-        incial_values, final_values = fc.pruning(X_test, y_test, accracy, pruning="eros")
-        
+        incial_values, final_values = fc.pruning(
+            X_test, y_test, accracy, pruning="eros")
+
         start = time.time()
-        recall, roc_auc, accracy, pcd, presi = utils.cross_validation_train(fc,train,test)
+        recall, roc_auc, accracy, pcd, presi = utils.cross_validation_train(
+            fc, train, test)
         end = time.time()
         duration = (end-start) / 60
         print(f'The function was executed in {duration} minutes.')
         data[data_name] = pd.Series([recall, roc_auc, accracy, pcd, presi, duration, incial_values, final_values],
-                                    index=['Recall_score', 'Auc_score', 'Accuracy_score', 'Diversity_PCD','Presicion', 'Time Mts', 'Inicial_values', 'Final_values'])
+                                    index=['Recall_score', 'Auc_score', 'Accuracy_score', 'Diversity_PCD', 'Presicion', 'Time Mts', 'Inicial_values', 'Final_values'])
         saver[data_name] = pd.Series([recall, roc_auc, accracy, pcd, presi, duration, incial_values, final_values],
-                                    index=['Recall_score', 'Auc_score', 'Accuracy_score', 'Diversity_PCD','Presicion', 'Time Mts', 'Inicial_values', 'Final_values'])
+                                     index=['Recall_score', 'Auc_score', 'Accuracy_score', 'Diversity_PCD', 'Presicion', 'Time Mts', 'Inicial_values', 'Final_values'])
         print('Done:', name)
-        saver.T.to_csv(f"./results/{name}.csv", header=True, index=True) #batch
-        saver.T.to_excel(f"./results/{name}.xlsx", header=True, index=True) #batch
-        
-        data.T.to_csv("./results/Results.csv", header=True, index=True) #batch
-        
+        saver.T.to_csv(f"./results/{name}.csv",
+                       header=True, index=True)  # batch
+        saver.T.to_excel(f"./results/{name}.xlsx",
+                         header=True, index=True)  # batch
 
-    data.T.to_csv("./results/Results.csv", header=True, index=True) #batch
-    
+        data.T.to_csv("./results/Results.csv",
+                      header=True, index=True)  # batch
+
+    data.T.to_csv("./results/Results.csv", header=True, index=True)  # batch

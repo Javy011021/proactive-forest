@@ -5,7 +5,6 @@ from sklearn.utils import check_X_y, check_array
 from sklearn.exceptions import NotFittedError
 from sklearn.metrics import accuracy_score
 from proactive_forest.pruning import AccuracyPruning, EROSbPruning
-from proactive_forest.tree import DecisionLeaf
 import proactive_forest.utils as utils
 from proactive_forest.diversity import PercentageCorrectDiversity, QStatisticDiversity, Variance_KWDiversity, EntropyDiversity, KagreementDiversity, DoubleFaultDiversity, DisagreementDiversity, FeatureImportancesDiversity, SelectedFeaturesDiversity, StructuralDiversity, FeatureImportancesByLevelDiversity
 from proactive_forest.tree_builder import TreeBuilder
@@ -72,23 +71,27 @@ class DecisionTreeClassifier(BaseEstimator, ClassifierMixin):
         if min_samples_leaf is not None and min_samples_leaf > 0:
             self._min_samples_leaf = min_samples_leaf
         else:
-            raise ValueError('The minimum number of instances to place in a leaf must be greater than 0.')
+            raise ValueError(
+                'The minimum number of instances to place in a leaf must be greater than 0.')
 
         if min_samples_split is not None and min_samples_split > 1:
             self._min_samples_split = min_samples_split
         else:
-            raise ValueError('The minimum number of instances to make a split must be greater than 1')
+            raise ValueError(
+                'The minimum number of instances to make a split must be greater than 1')
 
         if feature_prob is None or (utils.check_array_sum_one(feature_prob) and
                                     utils.check_positive_array(feature_prob)):
             self._feature_prob = feature_prob
         else:
-            raise ValueError('The features probabilities must be positive values and the sum must be one')
+            raise ValueError(
+                'The features probabilities must be positive values and the sum must be one')
 
         if min_gain_split is not None and min_gain_split >= 0:
             self._min_gain_split = min_gain_split
         else:
-            raise ValueError('The minimum value of gain to make a split must be greater or equal to 0')
+            raise ValueError(
+                'The minimum value of gain to make a split must be greater or equal to 0')
 
         if split_chooser is not None:
             self._split_chooser = resolve_split_selection(split_chooser)
@@ -101,7 +104,8 @@ class DecisionTreeClassifier(BaseEstimator, ClassifierMixin):
             raise ValueError('The split criterion can not be None.')
 
         if feature_selection is not None:
-            self._feature_selection = resolve_feature_selection(feature_selection)
+            self._feature_selection = resolve_feature_selection(
+                feature_selection)
         else:
             raise ValueError('The feature selection criteria can not be None.')
 
@@ -255,6 +259,20 @@ class DecisionTreeClassifier(BaseEstimator, ClassifierMixin):
 
         return X
 
+    def pruning(self, X_test, y_test, pruning='error'):
+        """
+        Prunning tree function.
+
+        :param X_test: <numpy ndarray> An array containing the feature vectors
+        :param y_test: <numpy array> An array containing the target features
+        :param pruning: <string> The type of pruning to be done
+        """
+
+        start_nodes = len(self._tree.nodes)
+        self._tree.prune(X_test, y_test, self._encoder, pruning)
+        end_nodes = len(self._tree.nodes)
+        return start_nodes, end_nodes
+
 
 class DecisionForestClassifier(BaseEstimator, ClassifierMixin):
     def __init__(self,
@@ -328,23 +346,27 @@ class DecisionForestClassifier(BaseEstimator, ClassifierMixin):
         if min_samples_leaf is not None and min_samples_leaf > 0:
             self._min_samples_leaf = min_samples_leaf
         else:
-            raise ValueError('The minimum number of instances to place in a leaf must be greater than 0.')
+            raise ValueError(
+                'The minimum number of instances to place in a leaf must be greater than 0.')
 
         if min_samples_split is not None and min_samples_split > 1:
             self._min_samples_split = min_samples_split
         else:
-            raise ValueError('The minimum number of instances to make a split must be greater than 1')
+            raise ValueError(
+                'The minimum number of instances to make a split must be greater than 1')
 
         if feature_prob is None or (utils.check_array_sum_one(feature_prob) and
                                     utils.check_positive_array(feature_prob)):
             self._feature_prob = feature_prob
         else:
-            raise ValueError('The features probabilities must be positive values and the sum must be one')
+            raise ValueError(
+                'The features probabilities must be positive values and the sum must be one')
 
         if min_gain_split is not None and min_gain_split >= 0:
             self._min_gain_split = min_gain_split
         else:
-            raise ValueError('The minimum value of gain to make a split must be greater or equal to 0')
+            raise ValueError(
+                'The minimum value of gain to make a split must be greater or equal to 0')
 
         if split_chooser is not None:
             self._split_chooser = resolve_split_selection(split_chooser)
@@ -357,7 +379,8 @@ class DecisionForestClassifier(BaseEstimator, ClassifierMixin):
             raise ValueError('The split criterion can not be None.')
 
         if feature_selection is not None:
-            self._feature_selection = resolve_feature_selection(feature_selection)
+            self._feature_selection = resolve_feature_selection(
+                feature_selection)
         else:
             raise ValueError('The feature selection criteria can not be None.')
 
@@ -475,12 +498,14 @@ class DecisionForestClassifier(BaseEstimator, ClassifierMixin):
             X_new = X[ids]
             y_new = y[ids]
 
-            new_tree = self._tree_builder.build_tree(X_new, y_new, self._n_classes)
+            new_tree = self._tree_builder.build_tree(
+                X_new, y_new, self._n_classes)
 
             if self._bootstrap:
                 validation_ids = set_generator.oob_ids()
                 if validation_ids:
-                    new_tree.weight = accuracy_score(y[validation_ids], self._predict_on_tree(X[validation_ids], new_tree))
+                    new_tree.weight = accuracy_score(
+                        y[validation_ids], self._predict_on_tree(X[validation_ids], new_tree))
 
             self._trees.append(new_tree)
             set_generator.clear()
@@ -524,7 +549,7 @@ class DecisionForestClassifier(BaseEstimator, ClassifierMixin):
         result = list(range(sample_size))
         for i in range(sample_size):
             x = X[i]
-            result[i] = voter.predict_proba(x,indexs)
+            result[i] = voter.predict_proba(x, indexs)
         return result
 
     def feature_importances(self):
@@ -587,7 +612,8 @@ class DecisionForestClassifier(BaseEstimator, ClassifierMixin):
         elif diversity == 'fil':
             metric = FeatureImportancesByLevelDiversity()
         else:
-            raise ValueError("It was not possible to recognize the diversity measure.")
+            raise ValueError(
+                "It was not possible to recognize the diversity measure.")
 
         forest_diversity = metric.get_measure(self._trees, X, y)
         return forest_diversity
@@ -617,7 +643,7 @@ class DecisionForestClassifier(BaseEstimator, ClassifierMixin):
         return X
 
     def _predict_on_tree(self, X, tree, check_input=True):
-        #print(X)
+        # print(X)
         """
         Predicts the classes for the new instances in X.
 
@@ -634,17 +660,16 @@ class DecisionForestClassifier(BaseEstimator, ClassifierMixin):
         for i in range(sample_size):
             x = X[i]
             result[i] = tree.predict(x)
-            #print(tree.predict(x))
+            # print(tree.predict(x))
         return result
-     
-           
+
     def pruning(self, X_test, y_test, pruning='error'):
         start_nodes = 0
         end_nodes = 0
         for i in self._trees:
             start_nodes += len(i.nodes)
             i.prune(X_test, y_test, self._encoder, pruning)
-            end_nodes += len(i.nodes)    
+            end_nodes += len(i.nodes)
         return start_nodes, end_nodes
 
 
@@ -686,7 +711,8 @@ class ProactiveForestClassifier(DecisionForestClassifier):
         if 0 < alpha <= 1:
             self.alpha = alpha
         else:
-            raise ValueError("The diversity rate can only take values from (0, 1].")
+            raise ValueError(
+                "The diversity rate can only take values from (0, 1].")
         super().__init__(n_estimators=n_estimators,
                          bootstrap=bootstrap,
                          max_depth=max_depth,
@@ -719,7 +745,8 @@ class ProactiveForestClassifier(DecisionForestClassifier):
         else:
             set_generator = SimpleSet(self._n_instances)
 
-        ledger = FIProbabilityLedger(probabilities=self._feature_prob, n_features=self._n_features, alpha=self.alpha)
+        ledger = FIProbabilityLedger(
+            probabilities=self._feature_prob, n_features=self._n_features, alpha=self.alpha)
 
         self._tree_builder = TreeBuilder(split_criterion=self._split_criterion,
                                          feature_prob=ledger.probabilities,
@@ -736,12 +763,14 @@ class ProactiveForestClassifier(DecisionForestClassifier):
             X_new = X[ids]
             y_new = y[ids]
 
-            new_tree = self._tree_builder.build_tree(X_new, y_new, self._n_classes)
+            new_tree = self._tree_builder.build_tree(
+                X_new, y_new, self._n_classes)
 
             if self._bootstrap:
                 validation_ids = set_generator.oob_ids()
                 if validation_ids:
-                    new_tree.weight = accuracy_score(y[validation_ids], self._predict_on_tree(X[validation_ids], new_tree))
+                    new_tree.weight = accuracy_score(
+                        y[validation_ids], self._predict_on_tree(X[validation_ids], new_tree))
 
             self._trees.append(new_tree)
             set_generator.clear()
@@ -751,16 +780,22 @@ class ProactiveForestClassifier(DecisionForestClassifier):
             self._tree_builder.feature_prob = ledger.probabilities
 
         return self
-    
-    
-    def pruning(self, X_test, y_test, accuracy = None, pruning='eros'):
-        if pruning  == 'accuracy':
+
+    def pruning(self, X_test, y_test, accuracy=None, pruning='eros'):
+        """
+        Prunning forest function.
+
+        :param X_test: <numpy ndarray> An array containing the feature vectors
+        :param y_test: <numpy array> An array containing the target features
+        :param accuracy: <float> The accuracy of the forest
+        :param pruning: <string> The type of pruning to be done
+        """
+        if pruning == 'accuracy':
             method = AccuracyPruning()
-        elif pruning  == 'eros':
-            method = EROSbPruning() 
+        elif pruning == 'eros':
+            method = EROSbPruning()
         else:
             return super().pruning(X_test, y_test, pruning)
-        
-        tree_pruning = method.pruning(self, X_test, y_test,accuracy)
+
+        tree_pruning = method.pruning(self, X_test, y_test, accuracy)
         return tree_pruning
-    

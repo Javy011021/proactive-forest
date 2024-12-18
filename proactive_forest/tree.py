@@ -2,9 +2,8 @@ from abc import ABC, abstractmethod
 import numpy as np
 from sklearn.base import check_array
 from sklearn.exceptions import NotFittedError
-from sklearn.metrics import accuracy_score
+from proactive_forest.pruning import DepthPruning, ReduceErrorPruning
 
-from proactive_forest.pruning import DepthPruning, ReduceErrorPruning 
 
 class DecisionTree:
     def __init__(self, n_features):
@@ -76,7 +75,7 @@ class DecisionTree:
                 current_node = self._nodes[current_node].result_branch(x)
         return prediction
 
-    def predict_proba(self, x,indexs):
+    def predict_proba(self, x, indexs):
         """
         Predicts for a given array x the class probability estimates
         using frequency-based Laplace correction.
@@ -99,8 +98,8 @@ class DecisionTree:
                 for i in indexs:
                     samp.append(self._nodes[current_node].samples[i])
 
-                class_proba= [n + 1 for n in samp] / \
-                             (np.sum(samp)+len(samp))
+                class_proba = [n + 1 for n in samp] / \
+                    (np.sum(samp)+len(samp))
             else:
                 current_node = self._nodes[current_node].result_branch(x)
         return class_proba.tolist()
@@ -155,7 +154,7 @@ class DecisionTree:
             if isinstance(node, DecisionLeaf):
                 count += 1
         return count
-    
+
     def _validate(self, X, check_input):
         """
         Validate X whenever one tries to predict or predict_proba.
@@ -181,27 +180,26 @@ class DecisionTree:
         return X
 
     def _get_father(self, nodes, index):
-        result=-1
+        result = -1
         for i in range(index-1, -1, -1):
-            if(nodes[i].depth == nodes[index].depth -1):
+            if (nodes[i].depth == nodes[index].depth - 1):
                 result = nodes[i]
                 break
         return result
-            
+
     def _order_branchs(self, nodes):
         for i in nodes:
             if not isinstance(i, DecisionLeaf):
                 i.left_branch = None
                 i.right_branch = None
-        
-        for i in range(1,len(nodes)):
+
+        for i in range(1, len(nodes)):
             father = self._get_father(nodes, i)
             if not (father.left_branch):
                 father.left_branch = i
             else:
                 father.right_branch = i
-  
-    
+
     def predict_list(self, X, check_input=True):
         """
         Predicts the classes for the new instances in X.
@@ -219,19 +217,19 @@ class DecisionTree:
             x = X[i]
             result[i] = self.predict(x)
         return result
-    
+
     def _convert_to_leaf(self, node):
         result = np.argmax(node.samples)
         return DecisionLeaf(node.samples, node.depth, result)
-    
+
     def _delete_node_brachs(self, nodes, index):
         result = nodes[:index+1]
         for i in range(index+1, len(nodes)):
             if nodes[i].depth <= nodes[index].depth:
                 result.extend(nodes[i:])
                 break
-        return result    
-                
+        return result
+
     def prune(self, X, y, encoder, pruning='error'):
         """
         Prunning tree function.
@@ -248,11 +246,12 @@ class DecisionTree:
             method = DepthPruning()
             # return self.depth_prune(X, y, encoder)
         else:
-            raise ValueError("It was not possible to recognize the pruning method.")
-        
+            raise ValueError(
+                "It was not possible to recognize the pruning method.")
+
         tree_pruning = method.pruning(self, X, y, encoder)
         return tree_pruning
-             
+
 
 class DecisionNode(ABC):
     def __init__(self, samples, depth):
