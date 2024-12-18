@@ -259,6 +259,20 @@ class DecisionTreeClassifier(BaseEstimator, ClassifierMixin):
 
         return X
 
+    def pruning(self, X_test, y_test, pruning='error'):
+        """
+        Prunning tree function.
+
+        :param X_test: <numpy ndarray> An array containing the feature vectors
+        :param y_test: <numpy array> An array containing the target features
+        :param pruning: <string> The type of pruning to be done
+        """
+
+        start_nodes = len(self._tree.nodes)
+        self._tree.prune(X_test, y_test, self._encoder, pruning)
+        end_nodes = len(self._tree.nodes)
+        return start_nodes, end_nodes
+
 
 class DecisionForestClassifier(BaseEstimator, ClassifierMixin):
     def __init__(self,
@@ -771,8 +785,8 @@ class ProactiveForestClassifier(DecisionForestClassifier):
         """
         Prunning forest function.
 
-        :param X: <numpy ndarray> An array containing the feature vectors
-        :param y: <numpy array> An array containing the target features
+        :param X_test: <numpy ndarray> An array containing the feature vectors
+        :param y_test: <numpy array> An array containing the target features
         :param accuracy: <float> The accuracy of the forest
         :param pruning: <string> The type of pruning to be done
         """
