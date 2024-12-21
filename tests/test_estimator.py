@@ -58,15 +58,19 @@ class DecisionTreeClassifierInitializationTest(TestCase):
 
     def test_feature_prob_exception_negative_values(self):
         with self.assertRaises(ValueError):
-            self.decision_tree = DecisionTreeClassifier(feature_prob=[-0.2, 0.4, 0.4])
+            self.decision_tree = DecisionTreeClassifier(
+                feature_prob=[-0.2, 0.4, 0.4])
 
     def test_feature_prob_exception_not_sum_one(self):
         with self.assertRaises(ValueError):
-            self.decision_tree = DecisionTreeClassifier(feature_prob=[0.2, 0.4, 0.5])
+            self.decision_tree = DecisionTreeClassifier(
+                feature_prob=[0.2, 0.4, 0.5])
 
     def test_feature_prob_positive_values_sum_one(self):
-        self.decision_tree = DecisionTreeClassifier(feature_prob=[0.25, 0.25, 0.25, 0.25])
-        self.assertEqual(self.decision_tree.feature_prob, [0.25, 0.25, 0.25, 0.25])
+        self.decision_tree = DecisionTreeClassifier(
+            feature_prob=[0.25, 0.25, 0.25, 0.25])
+        self.assertEqual(self.decision_tree.feature_prob,
+                         [0.25, 0.25, 0.25, 0.25])
 
     def test_min_gain_split_exception_none_value(self):
         with self.assertRaises(ValueError):
@@ -90,7 +94,8 @@ class DecisionTreeClassifierInitializationTest(TestCase):
 
     def test_split_chooser_admissible_value(self):
         self.decision_tree = DecisionTreeClassifier(split_chooser='best')
-        self.assertIsInstance(self.decision_tree._split_chooser, BestSplitChooser)
+        self.assertIsInstance(
+            self.decision_tree._split_chooser, BestSplitChooser)
 
     def test_split_criterion_exception_none_value(self):
         with self.assertRaises(ValueError):
@@ -102,7 +107,8 @@ class DecisionTreeClassifierInitializationTest(TestCase):
 
     def test_split_criterion_admissible_value(self):
         self.decision_tree = DecisionTreeClassifier(split_criterion='gini')
-        self.assertIsInstance(self.decision_tree._split_criterion, GiniCriterion)
+        self.assertIsInstance(
+            self.decision_tree._split_criterion, GiniCriterion)
 
     def test_feature_selection_exception_none_value(self):
         with self.assertRaises(ValueError):
@@ -110,17 +116,20 @@ class DecisionTreeClassifierInitializationTest(TestCase):
 
     def test_feature_selection_exception_non_admissible_value(self):
         with self.assertRaises(ValueError):
-            self.decision_tree = DecisionTreeClassifier(feature_selection='non')
+            self.decision_tree = DecisionTreeClassifier(
+                feature_selection='non')
 
     def test_feature_selection_admissible_value(self):
         self.decision_tree = DecisionTreeClassifier(feature_selection='all')
-        self.assertIsInstance(self.decision_tree._feature_selection, AllFeatureSelection)
+        self.assertIsInstance(
+            self.decision_tree._feature_selection, AllFeatureSelection)
 
 
 class DecisionTreeClassifierTest(TestCase):
     def setUp(self):
         self.decision_tree = DecisionTreeClassifier()
-        self.X = np.array(['A', 'B', 'A', 'B', 'B', 'C', 'A', 'C', 'B']).reshape((3, 3))
+        self.X = np.array(['A', 'B', 'A', 'B', 'B', 'C',
+                          'A', 'C', 'B']).reshape((3, 3))
         self.y = np.array([1, 1, 0])
 
     def tearDown(self):
@@ -152,7 +161,8 @@ class DecisionTreeClassifierTest(TestCase):
         expected_length_prediction = 1
         resulted_length_prediction = len(self.decision_tree.predict(x))
 
-        self.assertEqual(resulted_length_prediction, expected_length_prediction)
+        self.assertEqual(resulted_length_prediction,
+                         expected_length_prediction)
 
     def test_predict_two_instances(self):
         self.decision_tree._tree = mock.MagicMock(spec=DecisionTree)
@@ -183,7 +193,8 @@ class DecisionTreeClassifierTest(TestCase):
 
     def test_predict_proba_two_instance(self):
         self.decision_tree._tree = mock.MagicMock(spec=DecisionTree)
-        self.decision_tree._tree.predict_proba.return_value = [[0.25, 0.75], [0.33, 0.67]]
+        self.decision_tree._tree.predict_proba.return_value = [
+            [0.25, 0.75], [0.33, 0.67]]
         self.decision_tree._n_features = 3
 
         x = np.array(['A', 'B', 'A', 'C', 'C', 'A']).reshape((2, 3))
@@ -230,7 +241,8 @@ class DecisionForestClassifierInitializationTest(TestCase):
 class DecisionForestClassifierTest(TestCase):
     def setUp(self):
         self.decision_forest = DecisionForestClassifier()
-        self.X = np.array(['A', 'B', 'A', 'B', 'B', 'C', 'A', 'C', 'B']).reshape((3, 3))
+        self.X = np.array(['A', 'B', 'A', 'B', 'B', 'C',
+                          'A', 'C', 'B']).reshape((3, 3))
         self.y = np.array([1, 1, 0])
 
     def tearDown(self):
@@ -242,7 +254,8 @@ class DecisionForestClassifierTest(TestCase):
         self.assertIsNotNone(self.decision_forest._tree_builder)
         self.assertIsNotNone(self.decision_forest._trees)
         self.assertIsInstance(self.decision_forest._trees, list)
-        self.assertEqual(len(self.decision_forest._trees), self.decision_forest.n_estimators)
+        self.assertEqual(len(self.decision_forest._trees),
+                         self.decision_forest.n_estimators)
 
     def test_predict_one_instance(self):
         self.decision_forest._n_features = 3
@@ -310,7 +323,8 @@ class DecisionForestClassifierTest(TestCase):
         self.decision_forest._trees = [tree_1, tree_2, tree_3]
         expected_feature_importances = [0.3, 0.3, 0.3]
         resulted_feature_importances = self.decision_forest.feature_importances()
-        self.assertEqual(len(expected_feature_importances), len(resulted_feature_importances))
+        self.assertEqual(len(expected_feature_importances),
+                         len(resulted_feature_importances))
         for a, b in zip(expected_feature_importances, resulted_feature_importances):
             self.assertAlmostEqual(a, b, places=2)
 
@@ -376,7 +390,8 @@ class DecisionForestClassifierTest(TestCase):
         x = np.array(['A', 'B', 'A', 'C', 'A', 'A']).reshape((2, 3))
 
         expected_prediction = [1, 1]
-        resulted_prediction = self.decision_forest._predict_on_tree(x, tree, False)
+        resulted_prediction = self.decision_forest._predict_on_tree(
+            x, tree, False)
         for expected, resulted in zip(expected_prediction, resulted_prediction):
             self.assertEqual(expected, resulted)
 
@@ -394,13 +409,27 @@ class ProactiveForestClassifierTest(TestCase):
 
     def test_fit(self):
         proactive_forest = ProactiveForestClassifier()
-        x = np.array(['A', 'B', 'A', 'B', 'B', 'C', 'A', 'C', 'B']).reshape((3, 3))
+        x = np.array(['A', 'B', 'A', 'B', 'B', 'C',
+                     'A', 'C', 'B']).reshape((3, 3))
         y = np.array([1, 1, 0])
         proactive_forest.fit(x, y)
+
         self.assertIsNotNone(proactive_forest._encoder)
         self.assertIsNotNone(proactive_forest._tree_builder)
         self.assertIsNotNone(proactive_forest._trees)
         self.assertIsInstance(proactive_forest._trees, list)
-        self.assertEqual(len(proactive_forest._trees), proactive_forest.n_estimators)
+        self.assertEqual(len(proactive_forest._trees),
+                         proactive_forest.n_estimators)
         self.assertIsNotNone(proactive_forest._tree_builder.feature_prob)
-        self.assertEqual(len(proactive_forest._tree_builder.feature_prob), proactive_forest._n_features)
+        self.assertEqual(
+            len(proactive_forest._tree_builder.feature_prob), proactive_forest._n_features)
+
+    def test_pruning_exception(self):
+        proactive_forest = ProactiveForestClassifier()
+        x = np.array(['A', 'B', 'A', 'B', 'B', 'C',
+                     'A', 'C', 'B']).reshape((3, 3))
+        y = np.array([1, 1, 0])
+        proactive_forest.fit(x, y)
+
+        with self.assertRaises(ValueError):
+            proactive_forest.pruning(x, y, pruning='kappa')
