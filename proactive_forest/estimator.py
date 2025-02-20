@@ -15,6 +15,9 @@ from proactive_forest.splits import resolve_split_selection
 from proactive_forest.metrics import resolve_split_criterion
 from proactive_forest.feature_selection import resolve_feature_selection
 
+import random
+import copy
+
 
 class DecisionTreeClassifier(BaseEstimator, ClassifierMixin):
     def __init__(self,
@@ -512,9 +515,9 @@ class DecisionForestClassifier(BaseEstimator, ClassifierMixin):
 
         return self
 
-    def predict(self, X, check_input=True):
+    def _no_encoder_predict(self, X, check_input=True):
         """
-        Predicts the classes for the new instances in X.
+        Predicts the classes for the new instances in X with out encode.
 
         :param X: <numpy ndarray> An array containing the feature vectors
         :param check_input: <bool> If input array must be checked
@@ -525,11 +528,22 @@ class DecisionForestClassifier(BaseEstimator, ClassifierMixin):
 
         voter = PerformanceWeightingVoter(self._trees, self._n_classes)
 
-        sample_size, features_count = X.shape
+        sample_size, _ = X.shape
         result = np.zeros(sample_size, dtype=int)
         for i in range(sample_size):
             x = X[i]
             result[i] = voter.predict(x)
+        return result
+
+    def predict(self, X, check_input=True):
+        """
+        Predicts the classes for the new instances in X.
+
+        :param X: <numpy ndarray> An array containing the feature vectors
+        :param check_input: <bool> If input array must be checked
+        :return: <numpy array>
+        """
+        result = self._no_encoder_predict(X, check_input)
         return self._encoder.inverse_transform(result)
 
     def predict_proba(self, X, indexs, check_input=True):
@@ -574,7 +588,7 @@ class DecisionForestClassifier(BaseEstimator, ClassifierMixin):
         mean_weight = np.mean(weights)
         return mean_weight
 
-    def diversity_measure(self, X, y, diversity='pcd'):
+    def diversity_measure(self, X, y, diversity='pcd', transform=True):
         """
         Calculates the diversity measure for the forest.
 
@@ -587,7 +601,8 @@ class DecisionForestClassifier(BaseEstimator, ClassifierMixin):
         :return: <float>
         """
         X, y = check_X_y(X, y, dtype=None)
-        y = self._encoder.transform(y)
+        if transform:
+            y = self._encoder.transform(y)
 
         if diversity == 'pcd':
             metric = PercentageCorrectDiversity()
@@ -781,6 +796,59 @@ class ProactiveForestClassifier(DecisionForestClassifier):
 
         return self
 
+    def window_fit(self, X, y, window_size=5):
+        """
+        Trains the decision forest classifier with (X, y).
+
+        :param X: <numpy ndarray> An array containing the feature vectors
+        :param y: <numpy array> An array containing the target features
+        :return: self
+        """
+        X, y = check_X_y(X, y, dtype=None)
+        self._encoder = LabelEncoder()
+        y = self._encoder.fit_transform(y)
+        self._n_instances, self._n_features = X.shape
+        self._n_classes = utils.count_classes(y)
+        self._trees = []
+
+        if self._bootstrap:
+            set_generator = BaggingSet(self._n_instances)
+        else:
+            set_generator = SimpleSet(self._n_instances)
+
+        ledger = FIProbabilityLedger(
+            probabilities=self._feature_prob, n_features=self._n_features, alpha=self.alpha)
+
+        self._tree_builder = TreeBuilder(split_criterion=self._split_criterion,
+                                         feature_prob=ledger.probabilities,
+                                         feature_selection=self._feature_selection,
+                                         max_depth=self._max_depth,
+                                         min_samples_leaf=self._min_samples_leaf,
+                                         min_gain_split=self._min_gain_split,
+                                         min_samples_split=self._min_samples_split,
+                                         split_chooser=self._split_chooser)
+
+        n_estimators = self._n_estimators+1
+        for i in range(1, n_estimators, window_size):
+
+            prev_tree_builder = copy.deepcopy(self._tree_builder)
+            prev_trees = copy.deepcopy(self._trees)
+            prev_accuracy = accuracy_score(y, self._no_encoder_predict(X))
+            prev_diversity = self.diversity_measure(X, y, transform=False)
+
+            limit = i + window_size if i + window_size < n_estimators else n_estimators
+            for j in range(i, limit):
+                new_tree = self._add_tree(X, y, set_generator)
+                rate = j/self._n_estimators
+                ledger.update_probabilities(new_tree, rate=rate)
+                self._tree_builder.feature_prob = ledger.probabilities
+
+            # print('j', j)
+            if (self._accept_trees(X, y, prev_diversity, prev_accuracy)):
+                self._tree_builder = prev_tree_builder
+                self._trees = prev_trees
+        return self
+
     def pruning(self, X_test, y_test, accuracy=None, pruning='eros'):
         """
         Prunning forest function.
@@ -799,3 +867,34 @@ class ProactiveForestClassifier(DecisionForestClassifier):
 
         tree_pruning = method.pruning(self, X_test, y_test, accuracy)
         return tree_pruning
+
+    def _accept_trees(self, X, y, prev_diversity, prev_accuracy):
+        print('at')
+        print('prev-div', prev_diversity, '   --     prev acc', prev_accuracy)
+
+        origin_y = self._encoder.inverse_transform(y)
+
+        diversity = self.diversity_measure(X, origin_y)
+        accuracy = accuracy_score(y, self._no_encoder_predict(X))
+        print('div', diversity, '   --    acc', accuracy)
+
+        return random.random() < 0.3
+
+    def _add_tree(self, x, y, set_generator):
+        ids = set_generator.training_ids()
+        x_new = x[ids]
+        y_new = y[ids]
+
+        new_tree = self._tree_builder.build_tree(
+            x_new, y_new, self._n_classes)
+
+        if self._bootstrap:
+            validation_ids = set_generator.oob_ids()
+            if validation_ids:
+                new_tree.weight = accuracy_score(
+                    y[validation_ids], self._predict_on_tree(x[validation_ids], new_tree))
+
+        self._trees.append(new_tree)
+        set_generator.clear()
+
+        return new_tree
