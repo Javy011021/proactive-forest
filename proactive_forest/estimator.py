@@ -14,6 +14,8 @@ from proactive_forest.probabilites import FIProbabilityLedger
 from proactive_forest.splits import resolve_split_selection
 from proactive_forest.metrics import resolve_split_criterion
 from proactive_forest.feature_selection import resolve_feature_selection
+import utils.utils as u
+
 
 import random
 import copy
@@ -805,10 +807,13 @@ class ProactiveForestClassifier(DecisionForestClassifier):
         :return: self
         """
         X, y = check_X_y(X, y, dtype=None)
+
+        X_train, X_test, y_train, y_test = u.train_test_splitt(X, y)
+
         self._encoder = LabelEncoder()
-        y = self._encoder.fit_transform(y)
-        self._n_instances, self._n_features = X.shape
-        self._n_classes = utils.count_classes(y)
+        y_train = self._encoder.fit_transform(y_train)
+        self._n_instances, self._n_features = X_train.shape
+        self._n_classes = utils.count_classes(y_train)
         self._trees = []
 
         if self._bootstrap:
@@ -833,18 +838,20 @@ class ProactiveForestClassifier(DecisionForestClassifier):
 
             prev_tree_builder = copy.deepcopy(self._tree_builder)
             prev_trees = copy.deepcopy(self._trees)
-            prev_accuracy = accuracy_score(y, self._no_encoder_predict(X))
-            prev_diversity = self.diversity_measure(X, y, transform=False)
+            prev_accuracy = accuracy_score(
+                y_train, self._no_encoder_predict(X_train))
+            prev_diversity = self.diversity_measure(
+                X_train, y_train, transform=False)
 
             limit = i + window_size if i + window_size < n_estimators else n_estimators
             for j in range(i, limit):
-                new_tree = self._add_tree(X, y, set_generator)
+                new_tree = self._add_tree(X_train, y_train, set_generator)
                 rate = j/self._n_estimators
                 ledger.update_probabilities(new_tree, rate=rate)
                 self._tree_builder.feature_prob = ledger.probabilities
 
             # print('j', j)
-            if (self._accept_trees(X, y, prev_diversity, prev_accuracy)):
+            if not (self._accept_trees(X_test, y_test, prev_diversity, prev_accuracy)):
                 self._tree_builder = prev_tree_builder
                 self._trees = prev_trees
         return self
@@ -869,16 +876,13 @@ class ProactiveForestClassifier(DecisionForestClassifier):
         return tree_pruning
 
     def _accept_trees(self, X, y, prev_diversity, prev_accuracy):
-        print('at')
-        print('prev-div', prev_diversity, '   --     prev acc', prev_accuracy)
-
-        origin_y = self._encoder.inverse_transform(y)
-
-        diversity = self.diversity_measure(X, origin_y)
-        accuracy = accuracy_score(y, self._no_encoder_predict(X))
-        print('div', diversity, '   --    acc', accuracy)
-
-        return random.random() < 0.3
+        diversity_threshold = 0.014
+        accuracy_threshold = 0.25
+        diversity = self.diversity_measure(X, y)
+        accuracy = accuracy_score(y, self.predict(X))
+        if prev_accuracy - accuracy > accuracy_threshold or (prev_diversity != 1 and prev_diversity - diversity > diversity_threshold):
+            return False
+        return True
 
     def _add_tree(self, x, y, set_generator):
         ids = set_generator.training_ids()

@@ -13,7 +13,7 @@ if __name__ == '__main__':
 
     data = pd.DataFrame()
 
-    for name, loader in load_batch.get_batch_3():
+    for name, loader in load_batch.get_all():
         saver = pd.DataFrame()
         data_name = name
         X, y = loader[0], loader[1]
@@ -23,19 +23,16 @@ if __name__ == '__main__':
         # fc = DecisionForestClassifier()#para ejecutar random forest
 
         train, test = utils.create_k(X.to_numpy(), y.to_numpy(), k=10)
-        # ------> Medida recall y roc_auc efectuando validacion cruzada con k=10
-        recall, roc_auc, accracy, pcd, presi = utils.cross_validation_train(
-            fc, train, test)
-
-        X_train, X_test, y_train, y_test = utils.train_test_splitt(X, y, 0.33)
-        incial_values, final_values = fc.pruning(
-            X_test, y_test, accracy, pruning="eros")
 
         start = time.time()
-        recall, roc_auc, accracy, pcd, presi = utils.cross_validation_train(
-            fc, train, test)
+        incial_values = 100
+
+        recall, roc_auc, accracy, pcd, presi, final_values = utils.cross_validation_train(
+            fc, train, test, pruning=True)
+
         end = time.time()
         duration = (end-start) / 60
+
         print(f'The function was executed in {duration} minutes.')
         data[data_name] = pd.Series([recall, roc_auc, accracy, pcd, presi, duration, incial_values, final_values],
                                     index=['Recall_score', 'Auc_score', 'Accuracy_score', 'Diversity_PCD', 'Presicion', 'Time Mts', 'Inicial_values', 'Final_values'])
