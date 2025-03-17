@@ -856,6 +856,65 @@ class ProactiveForestClassifier(DecisionForestClassifier):
                 self._trees = prev_trees
         return self
 
+    def window_fit_2(self, X, y, window_size=5):
+        """
+        Trains the decision forest classifier with (X, y).
+
+        :param X: <numpy ndarray> An array containing the feature vectors
+        :param y: <numpy array> An array containing the target features
+        :return: self
+        """
+        X, y = check_X_y(X, y, dtype=None)
+
+        X_train, X_test, y_train, y_test = u.train_test_splitt(X, y)
+
+        self._encoder = LabelEncoder()
+        y_train = self._encoder.fit_transform(y_train)
+        self._n_instances, self._n_features = X_train.shape
+        self._n_classes = utils.count_classes(y_train)
+        self._trees = []
+
+        if self._bootstrap:
+            set_generator = BaggingSet(self._n_instances)
+        else:
+            set_generator = SimpleSet(self._n_instances)
+
+        ledger = FIProbabilityLedger(
+            probabilities=self._feature_prob, n_features=self._n_features, alpha=self.alpha)
+
+        self._tree_builder = TreeBuilder(split_criterion=self._split_criterion,
+                                         feature_prob=ledger.probabilities,
+                                         feature_selection=self._feature_selection,
+                                         max_depth=self._max_depth,
+                                         min_samples_leaf=self._min_samples_leaf,
+                                         min_gain_split=self._min_gain_split,
+                                         min_samples_split=self._min_samples_split,
+                                         split_chooser=self._split_chooser)
+
+        n_estimators = self._n_estimators+1
+        for i in range(1, n_estimators, window_size):
+
+            prev_tree_builder = copy.deepcopy(self._tree_builder)
+            prev_trees = copy.deepcopy(self._trees)
+
+            prev_accuracy = accuracy_score(
+                y_test, self.predict(X_test))
+            prev_diversity = self.diversity_measure(
+                X_test, y_test)
+
+            limit = i + window_size if i + window_size < n_estimators else n_estimators
+            for j in range(i, limit):
+                new_tree = self._add_tree(X_train, y_train, set_generator)
+                rate = j/self._n_estimators
+                ledger.update_probabilities(new_tree, rate=rate)
+                self._tree_builder.feature_prob = ledger.probabilities
+
+            # print('j', j)
+            if not (self._accept_trees(X_test, y_test, prev_diversity, prev_accuracy, accuracy_threshold=0.004)):
+                self._tree_builder = prev_tree_builder
+                self._trees = prev_trees
+        return self
+
     def pruning(self, X_test, y_test, accuracy=None, pruning='eros'):
         """
         Prunning forest function.
@@ -875,9 +934,7 @@ class ProactiveForestClassifier(DecisionForestClassifier):
         tree_pruning = method.pruning(self, X_test, y_test, accuracy)
         return tree_pruning
 
-    def _accept_trees(self, X, y, prev_diversity, prev_accuracy):
-        diversity_threshold = 0.014
-        accuracy_threshold = 0.25
+    def _accept_trees(self, X, y, prev_diversity, prev_accuracy, diversity_threshold = 0.014, accuracy_threshold = 0.25):
         diversity = self.diversity_measure(X, y)
         accuracy = accuracy_score(y, self.predict(X))
         if prev_accuracy - accuracy > accuracy_threshold or (prev_diversity != 1 and prev_diversity - diversity > diversity_threshold):
@@ -902,3 +959,14 @@ class ProactiveForestClassifier(DecisionForestClassifier):
         set_generator.clear()
 
         return new_tree
+
+    def _accept_trees_2(self, X, y, prev_diversity, prev_accuracy):
+
+        diversity = self.diversity_measure(X, y)
+        # accuracy = accuracy_score(y, self.predict(X))
+        # print('prev_accuracy: ', prev_accuracy, '       accuracy: ',
+        #       accuracy, '        div: ', prev_accuracy-accuracy)
+        print('prev_diversity: ', prev_diversity, '     diversity: ',
+              diversity, '       dif: ', prev_diversity-diversity)
+
+        return True

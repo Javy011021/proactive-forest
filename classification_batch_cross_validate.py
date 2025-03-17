@@ -13,7 +13,7 @@ if __name__ == '__main__':
 
     data = pd.DataFrame()
 
-    for name, loader in load_batch.get_all():
+    for name, loader in load_batch.get_batch_2():
         saver = pd.DataFrame()
         data_name = name
         X, y = loader[0], loader[1]

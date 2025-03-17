@@ -22,18 +22,25 @@ def shuffle_data(data, labels):
     return np.array(x), np.array(y)
 
 
-def create_k(x, y, k=5):
+def create_k(x, y, k=5, type = "skf"):
     train = []
     test = []
+    fold = None
     # data, labels = shuffle_data(x,y)
     data, labels = x, y
-    kf = KFold(n_splits=k)
-    for train_index, test_index in kf.split(data):
+    if type == "kf":
+        fold = KFold(n_splits=k)
+    elif type == "skf":
+        fold = StratifiedKFold(n_splits=k)
+    else:
+        raise ValueError(
+            "The specified cross-validation type was not recognized.")
+    
+    for train_index, test_index in fold.split(data, labels):
         x_train, x_test = data[train_index], data[test_index]
         y_train, y_test = labels[train_index], labels[test_index]
 
         train.append([x_train, y_train])
-
         test.append([x_test, y_test])
 
     return train, test
@@ -58,7 +65,7 @@ def cross_validation_train(model, train, test, pruning=False):
         print("Para el", a, " k conjunto de prueba y entrenamiento")
 
         if pruning:
-            model.window_fit(x_train, y_train)
+            model.window_fit_2(x_train, y_train)
         else:
             model.fit(x_train, y_train)
         # score_auc = calculate_roc_auc(np.unique(y_train) ,np.unique(y_test), model, x_test, y_test)
@@ -128,7 +135,7 @@ def calculate_roc_auc(y_train_class, y_test_class, model, x_test, y_test):
 
 # Método para dividir el conjunto de entrenamiento
 def train_test_splitt(train_data, train_labels, test_size=0.2):
-    # train_data, train_labels = shuffle_data(X, y)
+    # train_data, train_labels = shuffle_data(train_data, train_labels)
 
     split_i = len(train_labels) - int(len(train_labels) // (1 / test_size))
     x_train, x_test = train_data[:split_i], train_data[split_i:]
