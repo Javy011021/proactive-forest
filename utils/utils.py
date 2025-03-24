@@ -46,7 +46,7 @@ def create_k(x, y, k=5, type = "skf"):
     return train, test
 
 
-def cross_validation_train(model, train, test, pruning=False):
+def cross_validation_train(model, train, test, pruning=False, diversity_threshold=0.014, accuracy_threshold=0.25):
     avg_recall = 0
     avg_presi = 0
     avg_auc = 0
@@ -65,7 +65,7 @@ def cross_validation_train(model, train, test, pruning=False):
         print("Para el", a, " k conjunto de prueba y entrenamiento")
 
         if pruning:
-            model.window_fit_2(x_train, y_train)
+            model.window_fit_2(x_train, y_train, diversity_threshold=diversity_threshold, accuracy_threshold=accuracy_threshold)
         else:
             model.fit(x_train, y_train)
         # score_auc = calculate_roc_auc(np.unique(y_train) ,np.unique(y_test), model, x_test, y_test)
@@ -134,8 +134,9 @@ def calculate_roc_auc(y_train_class, y_test_class, model, x_test, y_test):
 
 
 # Método para dividir el conjunto de entrenamiento
-def train_test_splitt(train_data, train_labels, test_size=0.2):
-    # train_data, train_labels = shuffle_data(train_data, train_labels)
+def train_test_splitt(train_data, train_labels, test_size=0.2, shuffle = False):
+    if shuffle:
+        train_data, train_labels = shuffle_data(train_data, train_labels)
 
     split_i = len(train_labels) - int(len(train_labels) // (1 / test_size))
     x_train, x_test = train_data[:split_i], train_data[split_i:]

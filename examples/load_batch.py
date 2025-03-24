@@ -4,9 +4,9 @@ from examples import load_data
 def get_my_batch():
     data = [
         # ('ionosphere', load_data.load_ionosphere()),
-        # ('iris', load_data.load_iris()),
-        ('nursery', load_data.load_nursery()),
-        # ('kr-vs-kp', load_data.load_kr_vs_kp())
+        # ('iris', load_data.load_balance_scale()),
+        # ('nursery', load_data.load_nursery()),
+        ('kr-vs-kp', load_data.load_flags())
     ]
     return data
 

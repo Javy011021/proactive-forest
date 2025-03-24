@@ -19,14 +19,14 @@ if __name__ == '__main__':
 
     file_name = "./results/Resultados_Un_Modelo_PF_vs_RF_.csv"
 
-    X, y = load_data.load_car()
+    X, y = load_data.load_tae()
 
     X_train, X_test, y_train, y_test = utils.train_test_splitt(X, y, 0.33)
 
     pf = ProactiveForestClassifier(n_estimators=100, alpha=0.1, bootstrap=True)
     rf = DecisionForestClassifier()
 
-    pf.window_fit(X_train, y_train)  # entrenar proactive
+    pf.window_fit_2(X_train, y_train)  # entrenar proactive
 
     rf.fit(X_train, y_train)  # entrenar random
 
