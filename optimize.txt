@@ -85,3 +85,12 @@ flags
 Best trials: [
     FrozenTrial(number=19, state=TrialState.COMPLETE, values=[0.6494845360824743], datetime_start=datetime.datetime(2025, 3, 24, 1, 47, 33, 160928), datetime_complete=datetime.datetime(2025, 3, 24, 1, 47, 47, 849662), params={'accuracy_threshold': 0.07130080532683382, 'diversity_threshold': 0.4630878215035187}, user_attrs={}, system_attrs={}, intermediate_values={}, distributions={'accuracy_threshold': FloatDistribution(high=0.5, log=False, low=0.002, step=None), 'diversity_threshold': FloatDistribution(high=0.5, log=False, low=0.002, step=None)}, trial_id=19, value=None)
 ]
+
+car
+Best trials: [
+    FrozenTrial(number=39, state=TrialState.COMPLETE, values=[0.9606481481481481], datetime_start=datetime.datetime(2025, 3, 24, 2, 53, 49, 10874), datetime_complete=datetime.datetime(2025, 3, 24, 2, 54, 23, 454116), params={'accuracy_threshold': 0.29152435866343, 'diversity_threshold': 0.031340927931948724}, user_attrs={}, system_attrs={}, intermediate_values={}, distributions={'accuracy_threshold': FloatDistribution(high=0.5, log=False, low=0.002, step=None), 'diversity_threshold': FloatDistribution(high=0.5, log=False, low=0.002, step=None)}, trial_id=39, value=None)
+]
+Best trials: [
+    FrozenTrial(number=54, state=TrialState.COMPLETE, values=[0.9652777777777778], datetime_start=datetime.datetime(2025, 3, 24, 4, 17, 57, 29189), datetime_complete=datetime.datetime(2025, 3, 24, 4, 18, 33, 282527), params={'accuracy_threshold': 0.3612773521242791, 'diversity_threshold': 0.024401443527269053}, user_attrs={}, system_attrs={}, intermediate_values={}, distributions={'accuracy_threshold': FloatDistribution(high=0.5, log=False, low=0.002, step=None), 'diversity_threshold': FloatDistribution(high=0.5, log=False, low=0.002, step=None)}, trial_id=54, value=None), 
+    FrozenTrial(number=68, state=TrialState.COMPLETE, values=[0.9652777777777778], datetime_start=datetime.datetime(2025, 3, 24, 4, 26, 21, 525823), datetime_complete=datetime.datetime(2025, 3, 24, 4, 26, 55, 781916), params={'accuracy_threshold': 0.39287876306787195, 'diversity_threshold': 0.020954280532724474}, user_attrs={}, system_attrs={}, intermediate_values={}, distributions={'accuracy_threshold': FloatDistribution(high=0.5, log=False, low=0.002, step=None), 'diversity_threshold': FloatDistribution(high=0.5, log=False, low=0.002, step=None)}, trial_id=68, value=None)
+]

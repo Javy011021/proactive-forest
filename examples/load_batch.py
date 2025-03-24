@@ -6,7 +6,7 @@ def get_my_batch():
         # ('ionosphere', load_data.load_ionosphere()),
         # ('iris', load_data.load_balance_scale()),
         # ('nursery', load_data.load_nursery()),
-        ('kr-vs-kp', load_data.load_flags())
+        ('kr-vs-kp', load_data.load_car())
     ]
     return data
 
@@ -104,7 +104,7 @@ def get_all():
         # ('cmc', load_data.load_cmc()),
         # ('credit-g', load_data.load_credit()),
         # ('diabetes', load_data.load_diabetes()),
-        ('ecoli', load_data.load_ecoli()),
+        # ('ecoli', load_data.load_ecoli()),
         # ('flags', load_data.load_flags()),
         # ('glass', load_data.load_glass()),
         # ('haberman', load_data.load_haberman()),
@@ -117,10 +117,10 @@ def get_all():
         # ('lymph', load_data.load_lymph()),
         # ('molecular', load_data.load_molecular()),
         # ('nursery', load_data.load_nursery()),
-        # ('optdigits', load_data.load_optdigits()),
-        # ('page_blocks', load_data.load_page_blocks()),
-        # ('pendigits', load_data.load_pendigits()),
-        # ('segment', load_data.load_segment()),
+        ('optdigits', load_data.load_optdigits()),
+        ('page_blocks', load_data.load_page_blocks()),
+        ('pendigits', load_data.load_pendigits()),
+        ('segment', load_data.load_segment()),
         # ('solar_flare1', load_data.load_solar_flare1()),
         # ('solar_flare2', load_data.load_solar_flare2()),
         # ('sonar', load_data.load_sonar()),
@@ -129,7 +129,7 @@ def get_all():
         # ('tae', load_data.load_tae()),
         # ('vehicle', load_data.load_vehicle()),
         # ('vowel', load_data.load_vowel()),
-        ('wdbc', load_data.load_wdbc()),
-        ('wine', load_data.load_wine())
+        # ('wdbc', load_data.load_wdbc()),
+        # ('wine', load_data.load_wine())
     ]
     return data

@@ -46,7 +46,7 @@ def create_k(x, y, k=5, type = "skf"):
     return train, test
 
 
-def cross_validation_train(model, train, test, pruning=False, diversity_threshold=0.058, accuracy_threshold=0.170):
+def cross_validation_train(model, train, test, pruning=False, diversity_threshold=0.031, accuracy_threshold=0.064):
     avg_recall = 0
     avg_presi = 0
     avg_auc = 0

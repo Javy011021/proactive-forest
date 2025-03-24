@@ -56,7 +56,6 @@ if __name__ == '__main__':
 
         print(f"Best parameters: {study.best_params}")
         print(f"Best score: {study.best_value}")
-        print(f"Best trial: {study.best_trial}")
         print(f"Best trials: {study.best_trials}")
 
     # data.T.to_csv("./results/Results.csv", header=True, index=True)
