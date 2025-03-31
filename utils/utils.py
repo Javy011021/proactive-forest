@@ -46,7 +46,7 @@ def create_k(x, y, k=5, type = "skf"):
     return train, test
 
 
-def cross_validation_train(model, train, test, pruning=False):
+def cross_validation_train(model, train, test, pruning=False, diversity_threshold=0.014, accuracy_threshold=0.25):
     avg_recall = 0
     avg_presi = 0
     avg_auc = 0
@@ -63,8 +63,8 @@ def cross_validation_train(model, train, test, pruning=False):
         y_train = trainn[1]
         y_test = testss[1]
         print("Para el", a, " k conjunto de prueba y entrenamiento")
-
-        model.fit(x_train, y_train, pruning)
+        
+        model.fit(x_train, y_train, pruning, diversity_threshold, accuracy_threshold)
         # score_auc = calculate_roc_auc(np.unique(y_train) ,np.unique(y_test), model, x_test, y_test)
         score_auc = 0
         predictions = model.predict(x_test)

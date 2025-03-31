@@ -742,7 +742,7 @@ class ProactiveForestClassifier(DecisionForestClassifier):
                          min_samples_split=min_samples_split
                          )
 
-    def fit(self, X, y, pruning=False):
+    def fit(self, X, y, pruning=False, diversity_threshold=0.014, accuracy_threshold=0.25):
         """
         Trains the decision forest classifier with (X, y).
 
@@ -775,7 +775,7 @@ class ProactiveForestClassifier(DecisionForestClassifier):
                                          split_chooser=self._split_chooser)
 
         if pruning:
-            method = ThresholdPruning()
+            method = ThresholdPruning(diversity_threshold=diversity_threshold, accuracy_threshold=accuracy_threshold)
             method.pruning(self, X, y, set_generator, ledger)
         else:
             self.base_fit(X, y, set_generator, ledger)
@@ -800,72 +800,6 @@ class ProactiveForestClassifier(DecisionForestClassifier):
             self._tree_builder.feature_prob = ledger.probabilities
 
         return self
-    
-    def window_fit_2(self, X, y, window_size=5, diversity_threshold=0.014, accuracy_threshold=0.25):
-        """
-        Trains the decision forest classifier with (X, y).
-
-        :param X: <numpy ndarray> An array containing the feature vectors
-        :param y: <numpy array> An array containing the target features
-        :return: self
-        """
-        X, y = check_X_y(X, y, dtype=None)
-
-        self._encoder = LabelEncoder()
-        y = self._encoder.fit_transform(y)
-        self._n_instances, self._n_features = X.shape
-        self._n_classes = utils.count_classes(y)
-        self._trees = []
-
-        if self._bootstrap:
-            set_generator = BaggingSet(self._n_instances)
-        else:
-            set_generator = SimpleSet(self._n_instances)
-
-        ledger = FIProbabilityLedger(
-            probabilities=self._feature_prob, n_features=self._n_features, alpha=self.alpha)
-
-        self._tree_builder = TreeBuilder(split_criterion=self._split_criterion,
-                                         feature_prob=ledger.probabilities,
-                                         feature_selection=self._feature_selection,
-                                         max_depth=self._max_depth,
-                                         min_samples_leaf=self._min_samples_leaf,
-                                         min_gain_split=self._min_gain_split,
-                                         min_samples_split=self._min_samples_split,
-                                         split_chooser=self._split_chooser)
-
-        n_estimators = self._n_estimators+1
-        for i in range(1, n_estimators, window_size):
-
-            generator = BaggingSet(self._n_instances)
-            ids = generator.training_ids()
-            X_train = X[ids]
-            y_train = y[ids]
-            ids = generator.oob_ids()
-            X_test = X[ids]
-            y_test = y[ids]
-
-            prev_tree_builder = copy.deepcopy(self._tree_builder)
-            prev_trees = copy.deepcopy(self._trees)
-            prev_accuracy = accuracy_score(
-                y_train, self._no_encoder_predict(X_train))
-            prev_diversity = self.diversity_measure(
-                X_train, y_train, transform=False)
-
-            limit = i + window_size if i + window_size < n_estimators else n_estimators
-            for j in range(i, limit):
-                new_tree = self._add_tree(X_train, y_train, set_generator)
-                rate = j/self._n_estimators
-                ledger.update_probabilities(new_tree, rate=rate)
-                self._tree_builder.feature_prob = ledger.probabilities
-
-            # print('j', j)
-            if not (self._accept_trees(X_test, y_test, prev_diversity, prev_accuracy, diversity_threshold, accuracy_threshold)):
-                self._tree_builder = prev_tree_builder
-                self._trees = prev_trees
-            
-            generator.clear()
-        return self
 
     def pruning(self, X_test, y_test, accuracy=None, pruning='eros'):
         """
@@ -877,13 +811,13 @@ class ProactiveForestClassifier(DecisionForestClassifier):
         :param pruning: <string> The type of pruning to be done
         """
         if pruning == 'accuracy':
-            method = AccuracyPruning()
+            method = AccuracyPruning(accuracy)
         elif pruning == 'eros':
             method = EROSbPruning()
         else:
             return super().pruning(X_test, y_test, pruning)
 
-        tree_pruning = method.pruning(self, X_test, y_test, accuracy)
+        tree_pruning = method.pruning(self, X_test, y_test)
         return tree_pruning
 
     def _add_tree(self, x, y, set_generator):
@@ -905,20 +839,3 @@ class ProactiveForestClassifier(DecisionForestClassifier):
 
         return new_tree
     
-    def _accept_trees(self, X, y, prev_diversity, prev_accuracy, diversity_threshold, accuracy_threshold):
-        diversity = self.diversity_measure(X, y, transform=False)
-        accuracy = accuracy_score(y, self._no_encoder_predict(X))
-        if prev_accuracy - accuracy > accuracy_threshold or (prev_diversity != 1 and prev_diversity - diversity > diversity_threshold):
-            return False
-        return True
-
-    def _accept_trees_2(self, X, y, prev_diversity, prev_accuracy):
-
-        diversity = self.diversity_measure(X, y)
-        # accuracy = accuracy_score(y, self.predict(X))
-        # print('prev_accuracy: ', prev_accuracy, '       accuracy: ',
-        #       accuracy, '        div: ', prev_accuracy-accuracy)
-        print('prev_diversity: ', prev_diversity, '     diversity: ',
-              diversity, '       dif: ', prev_diversity-diversity)
-
-        return True

@@ -114,7 +114,10 @@ class StaticPruning(ForestPruning):
 
 class AccuracyPruning(StaticPruning):
 
-    def pruning(self, predictor, X, y, accuracy=None):
+    def __init__(self, accuracy=None):
+        self.accuracy = accuracy
+
+    def pruning(self, predictor, X, y):
         """Accuracy-based pruning function.
 
         :param predictor: <ProactiveForestClassifier> The decision forest to be pruned
@@ -127,8 +130,10 @@ class AccuracyPruning(StaticPruning):
         limit = 10
         predictors = predictor._trees
         initial_len = len(predictors)
-        if not accuracy:
+        if not self.accuracy:
             accuracy = accuracy_score(y, predictor.predict(X))
+        else:
+            accuracy = self.accuracy
         initial_accuracy = accuracy
 
         n = 1
@@ -164,7 +169,7 @@ class AccuracyPruning(StaticPruning):
 
 class EROSbPruning(StaticPruning):
 
-    def pruning(self, predictor, X, y, accuracy=None):
+    def pruning(self, predictor, X, y):
         """Version EROS pruning function.
 
         :param predictor: <ProactiveForestClassifier> The decision forest to be pruned
@@ -250,9 +255,16 @@ class ThresholdPruning(DinamicPruning):
                 ledger.update_probabilities(new_tree, rate=rate)
                 predictor._tree_builder.feature_prob = ledger.probabilities
 
-            if not (predictor._accept_trees(X_test, y_test, prev_diversity, prev_accuracy, self.diversity_threshold, self.accuracy_threshold)):
+            if not (self.accept_trees(predictor, X_test, y_test, prev_diversity, prev_accuracy)):
                 predictor._tree_builder = prev_tree_builder
                 predictor._trees = prev_trees
             
             generator.clear()
         return predictor
+    
+    def accept_trees(self, predictor, X, y, prev_diversity, prev_accuracy):
+        diversity = predictor.diversity_measure(X, y, transform=False)
+        accuracy = accuracy_score(y, predictor._no_encoder_predict(X))
+        if prev_accuracy - accuracy > self.accuracy_threshold or (prev_diversity != 1 and prev_diversity - diversity > self.diversity_threshold):
+            return False
+        return True

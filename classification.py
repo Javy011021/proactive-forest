@@ -26,7 +26,7 @@ if __name__ == '__main__':
     pf = ProactiveForestClassifier(n_estimators=100, alpha=0.1, bootstrap=True)
     rf = DecisionForestClassifier()
 
-    pf.window_fit_2(X_train, y_train)  # entrenar proactive
+    pf.fit(X_train, y_train, pruning=True)  # entrenar proactive
 
     rf.fit(X_train, y_train)  # entrenar random
 
