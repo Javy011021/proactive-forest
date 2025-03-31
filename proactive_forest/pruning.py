@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
 from sklearn.metrics import accuracy_score
+from proactive_forest.sets import BaggingSet
+import copy
 
 
 class Pruning(ABC):
@@ -100,13 +102,17 @@ class DepthPruning(TreePruning):
             predictor._order_branchs(predictor.nodes)
 
 
-class ForestPruning(Pruning):
+class ForestPruning(ABC):
+    @abstractmethod
+    def pruning(self, predictor, X, y):
+        pass
+
+class StaticPruning(ForestPruning):
     @abstractmethod
     def pruning(self, predictor, X, y, accuracy=None):
         pass
 
-
-class AccuracyPruning(ForestPruning):
+class AccuracyPruning(StaticPruning):
 
     def pruning(self, predictor, X, y, accuracy=None):
         """Accuracy-based pruning function.
@@ -156,7 +162,7 @@ class AccuracyPruning(ForestPruning):
         return initial_len, len(predictors)
 
 
-class EROSbPruning(ForestPruning):
+class EROSbPruning(StaticPruning):
 
     def pruning(self, predictor, X, y, accuracy=None):
         """Version EROS pruning function.
@@ -195,3 +201,58 @@ class EROSbPruning(ForestPruning):
 
         predictor._trees = trees
         return initial_len, len(trees)
+
+
+
+class DinamicPruning(ForestPruning):
+    @abstractmethod
+    def pruning(self, predictor, X, y, set_generator, ledger):
+        pass
+
+class ThresholdPruning(DinamicPruning):
+
+    def __init__(self, window_size=5, diversity_threshold=0.031, accuracy_threshold=0.064):
+        self.window_size = window_size
+        self.diversity_threshold = diversity_threshold
+        self.accuracy_threshold = accuracy_threshold
+
+    def pruning(self, predictor, X, y, set_generator, ledger):
+        """
+        Trains and prune the decision forest classifier with (X, y).
+
+        :param X: <numpy ndarray> An array containing the feature vectors
+        :param y: <numpy array> An array containing the target features
+        :return: self
+        """
+        
+        n_estimators = predictor._n_estimators+1
+        for i in range(1, n_estimators, self.window_size):
+
+            generator = BaggingSet(predictor._n_instances)
+            ids = generator.training_ids()
+            X_train = X[ids]
+            y_train = y[ids]
+            ids = generator.oob_ids()
+            X_test = X[ids]
+            y_test = y[ids]
+
+            prev_tree_builder = copy.deepcopy(predictor._tree_builder)
+            prev_trees = copy.deepcopy(predictor._trees)
+            prev_accuracy = accuracy_score(
+                y_train, y_pred=predictor._no_encoder_predict(X_train))
+            prev_diversity = predictor.diversity_measure(
+                X_train, y_train, transform=False)
+
+            limit = i + self.window_size if i + self.window_size < n_estimators else n_estimators
+            for j in range(i, limit):
+                new_tree = predictor._add_tree(X_train, y_train, set_generator)
+                rate = j/predictor._n_estimators
+                ledger.update_probabilities(new_tree, rate=rate)
+                predictor._tree_builder.feature_prob = ledger.probabilities
+
+            if not (predictor._accept_trees(X_test, y_test, prev_diversity, prev_accuracy, self.diversity_threshold, self.accuracy_threshold)):
+                predictor._tree_builder = prev_tree_builder
+                predictor._trees = prev_trees
+            
+            generator.clear()
+        return predictor
