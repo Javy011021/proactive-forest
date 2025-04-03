@@ -180,7 +180,7 @@ class DecisionTree:
         return X
 
     def _get_father(self, nodes, index):
-        result = -1
+        result = None
         for i in range(index-1, -1, -1):
             if (nodes[i].depth == nodes[index].depth - 1):
                 result = nodes[i]

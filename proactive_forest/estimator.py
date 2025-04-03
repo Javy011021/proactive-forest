@@ -4,7 +4,7 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.utils import check_X_y, check_array
 from sklearn.exceptions import NotFittedError
 from sklearn.metrics import accuracy_score
-from proactive_forest.pruning import AccuracyPruning, EROSbPruning, ThresholdPruning
+from proactive_forest.pruning import AccuracyPruning, EROSbPruning, ForestBasedTreePruning, WindowThresholdPruning
 import proactive_forest.utils as utils
 from proactive_forest.diversity import PercentageCorrectDiversity, QStatisticDiversity, Variance_KWDiversity, EntropyDiversity, KagreementDiversity, DoubleFaultDiversity, DisagreementDiversity, FeatureImportancesDiversity, SelectedFeaturesDiversity, StructuralDiversity, FeatureImportancesByLevelDiversity
 from proactive_forest.tree_builder import TreeBuilder
@@ -14,11 +14,6 @@ from proactive_forest.probabilites import FIProbabilityLedger
 from proactive_forest.splits import resolve_split_selection
 from proactive_forest.metrics import resolve_split_criterion
 from proactive_forest.feature_selection import resolve_feature_selection
-import utils.utils as u
-
-
-import random
-import copy
 
 
 class DecisionTreeClassifier(BaseEstimator, ClassifierMixin):
@@ -469,12 +464,13 @@ class DecisionForestClassifier(BaseEstimator, ClassifierMixin):
     def feature_selection(self, feature_selection):
         self._feature_selection = feature_selection
 
-    def fit(self, X, y):
+    def fit(self, X, y, pruning=False):
         """
         Trains the decision forest classifier with (X, y).
 
         :param X: <numpy ndarray> An array containing the feature vectors
         :param y: <numpy array> An array containing the target features
+        :param pruning: <bool> If the forest must be pruned
         :return: self
         """
         X, y = check_X_y(X, y, dtype=None)
@@ -497,25 +493,15 @@ class DecisionForestClassifier(BaseEstimator, ClassifierMixin):
                                          min_gain_split=self._min_gain_split,
                                          min_samples_split=self._min_samples_split,
                                          split_chooser=self._split_chooser)
+        
+        if pruning:
+            method = WindowThresholdPruning()
+            method.pruning(self, X, y, set_generator)
+        else: 
+            for _ in range(self._n_estimators):
+                self._add_tree(X, y, set_generator)
 
-        for _ in range(self._n_estimators):
-            ids = set_generator.training_ids()
-            X_new = X[ids]
-            y_new = y[ids]
-
-            new_tree = self._tree_builder.build_tree(
-                X_new, y_new, self._n_classes)
-
-            if self._bootstrap:
-                validation_ids = set_generator.oob_ids()
-                if validation_ids:
-                    new_tree.weight = accuracy_score(
-                        y[validation_ids], self._predict_on_tree(X[validation_ids], new_tree))
-
-            self._trees.append(new_tree)
-            set_generator.clear()
-
-        return self
+        return self    
 
     def _no_encoder_predict(self, X, check_input=True):
         """
@@ -679,15 +665,29 @@ class DecisionForestClassifier(BaseEstimator, ClassifierMixin):
             result[i] = tree.predict(x)
             # print(tree.predict(x))
         return result
+    
+    def _add_tree(self, x, y, set_generator):
+        ids = set_generator.training_ids()
+        x_new = x[ids]
+        y_new = y[ids]
 
+        new_tree = self._tree_builder.build_tree(
+            x_new, y_new, self._n_classes)
+
+        if self._bootstrap:
+            validation_ids = set_generator.oob_ids()
+            if validation_ids:
+                new_tree.weight = accuracy_score(
+                    y[validation_ids], self._predict_on_tree(x[validation_ids], new_tree))
+
+        self._trees.append(new_tree)
+        set_generator.clear()
+
+        return new_tree
+    
     def pruning(self, X_test, y_test, pruning='error'):
-        start_nodes = 0
-        end_nodes = 0
-        for i in self._trees:
-            start_nodes += len(i.nodes)
-            i.prune(X_test, y_test, self._encoder, pruning)
-            end_nodes += len(i.nodes)
-        return start_nodes, end_nodes
+        method = ForestBasedTreePruning(pruning)
+        return method.pruning(X_test, y_test)
 
 
 class ProactiveForestClassifier(DecisionForestClassifier):
@@ -742,12 +742,13 @@ class ProactiveForestClassifier(DecisionForestClassifier):
                          min_samples_split=min_samples_split
                          )
 
-    def fit(self, X, y, pruning=False, diversity_threshold=0.014, accuracy_threshold=0.25):
+    def fit(self, X, y, pruning=False):
         """
         Trains the decision forest classifier with (X, y).
 
         :param X: <numpy ndarray> An array containing the feature vectors
         :param y: <numpy array> An array containing the target features
+        :param pruning: <bool> If the forest must be pruned
         :return: self
         """
         X, y = check_X_y(X, y, dtype=None)
@@ -775,10 +776,10 @@ class ProactiveForestClassifier(DecisionForestClassifier):
                                          split_chooser=self._split_chooser)
 
         if pruning:
-            method = ThresholdPruning(diversity_threshold=diversity_threshold, accuracy_threshold=accuracy_threshold)
-            method.pruning(self, X, y, set_generator, ledger)
+            method = WindowThresholdPruning(ledger=ledger)
+            method.pruning(self, X, y, set_generator)
         else:
-            self.base_fit(X, y, set_generator, ledger)
+            self.base_fit(X, y, set_generator)
 
         return self
     
@@ -801,7 +802,7 @@ class ProactiveForestClassifier(DecisionForestClassifier):
 
         return self
 
-    def pruning(self, X_test, y_test, accuracy=None, pruning='eros'):
+    def pruning(self, X_test, y_test, pruning='eros', accuracy=None):
         """
         Prunning forest function.
 
@@ -819,23 +820,5 @@ class ProactiveForestClassifier(DecisionForestClassifier):
 
         tree_pruning = method.pruning(self, X_test, y_test)
         return tree_pruning
-
-    def _add_tree(self, x, y, set_generator):
-        ids = set_generator.training_ids()
-        x_new = x[ids]
-        y_new = y[ids]
-
-        new_tree = self._tree_builder.build_tree(
-            x_new, y_new, self._n_classes)
-
-        if self._bootstrap:
-            validation_ids = set_generator.oob_ids()
-            if validation_ids:
-                new_tree.weight = accuracy_score(
-                    y[validation_ids], self._predict_on_tree(x[validation_ids], new_tree))
-
-        self._trees.append(new_tree)
-        set_generator.clear()
-
-        return new_tree
+  
     

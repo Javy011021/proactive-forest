@@ -3,14 +3,7 @@ from sklearn.metrics import accuracy_score
 from proactive_forest.sets import BaggingSet
 import copy
 
-
-class Pruning(ABC):
-    @abstractmethod
-    def pruning(self):
-        pass
-
-
-class TreePruning(Pruning):
+class TreePruning(ABC):
     @abstractmethod
     def pruning(self, predictor, X, y, encoder):
         pass
@@ -109,7 +102,7 @@ class ForestPruning(ABC):
 
 class StaticPruning(ForestPruning):
     @abstractmethod
-    def pruning(self, predictor, X, y, accuracy=None):
+    def pruning(self, predictor, X, y):
         pass
 
 class AccuracyPruning(StaticPruning):
@@ -208,22 +201,44 @@ class EROSbPruning(StaticPruning):
         return initial_len, len(trees)
 
 
+class ForestBasedTreePruning(StaticPruning):
+    """Forest pruning base on trees prunings function.
 
-class DinamicPruning(ForestPruning):
+        :param predictor: <ProactiveForestClassifier> The decision forest to be pruned
+        :param X: <numpy ndaray> Feature vectors
+        :param y: <numpy array> Target feature
+        :return: <list> Number of initial and final trees
+    """
+
+    def __init__(self, pruning_tree_type):
+        self.pruning_tree_type = pruning_tree_type
+
+    def pruning(self, predictor, X, y):
+        start_nodes = 0
+        end_nodes = 0
+        for i in predictor._trees:
+            start_nodes += len(i.nodes)
+            i.prune(X, y, predictor._encoder, self.pruning_tree_type)
+            end_nodes += len(i.nodes)
+        return start_nodes, end_nodes
+
+
+class DynamicPruning(ForestPruning):
     @abstractmethod
     def pruning(self, predictor, X, y, set_generator, ledger):
         pass
 
-class ThresholdPruning(DinamicPruning):
+class WindowThresholdPruning(DynamicPruning):
 
-    def __init__(self, window_size=5, diversity_threshold=0.031, accuracy_threshold=0.064):
+    def __init__(self, window_size=5, diversity_threshold=0.031, accuracy_threshold=0.064, ledger=None):
         self.window_size = window_size
         self.diversity_threshold = diversity_threshold
         self.accuracy_threshold = accuracy_threshold
+        self.ledger = ledger
 
-    def pruning(self, predictor, X, y, set_generator, ledger):
+    def pruning(self, predictor, X, y, set_generator):
         """
-        Trains and prune the decision forest classifier with (X, y).
+        Trains and prune  the decision forest classifier with (X, y).
 
         :param X: <numpy ndarray> An array containing the feature vectors
         :param y: <numpy array> An array containing the target features
@@ -251,9 +266,10 @@ class ThresholdPruning(DinamicPruning):
             limit = i + self.window_size if i + self.window_size < n_estimators else n_estimators
             for j in range(i, limit):
                 new_tree = predictor._add_tree(X_train, y_train, set_generator)
-                rate = j/predictor._n_estimators
-                ledger.update_probabilities(new_tree, rate=rate)
-                predictor._tree_builder.feature_prob = ledger.probabilities
+                if self.ledger:
+                    rate = j/predictor._n_estimators
+                    self.ledger.update_probabilities(new_tree, rate=rate)
+                    predictor._tree_builder.feature_prob = self.ledger.probabilities
 
             if not (self.accept_trees(predictor, X_test, y_test, prev_diversity, prev_accuracy)):
                 predictor._tree_builder = prev_tree_builder
