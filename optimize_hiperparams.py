@@ -19,19 +19,16 @@ class ModelOptimization:
 
     def objective(self, trial):
         accuracy_threshold = trial.suggest_float(
-            "accuracy_threshold", 0.002, 0.5)
+            "accuracy_threshold", 0.010, 0.080)
         diversity_threshold = trial.suggest_float(
-            "diversity_threshold", 0.002, 0.5)
+            "diversity_threshold", 0.010, 0.080)
 
         fc = ProactiveForestClassifier(alpha=0.1)
         # fc = DecisionForestClassifier()#para ejecutar random forest
         recall, roc_auc, accracy, pcd, presi, final_values = utils.cross_validation_train(
             fc,
             self.train,
-            self.test,
-            pruning=True,
-            diversity_threshold=diversity_threshold,
-            accuracy_threshold=accuracy_threshold)
+            self.test)
         
         print(f'Total of trees: {len(fc._trees)}')
 

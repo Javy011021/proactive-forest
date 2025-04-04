@@ -4,9 +4,10 @@ from examples import load_data
 def get_my_batch():
     data = [
         # ('ionosphere', load_data.load_ionosphere()),
-        # ('iris', load_data.load_balance_scale()),
         # ('nursery', load_data.load_nursery()),
-        ('kr-vs-kp', load_data.load_car())
+        # ('kr-vs-kp', load_data.load_kr_vs_kp())
+        ('iris', load_data.load_iris())
+
     ]
     return data
 
@@ -112,15 +113,15 @@ def get_all():
         # ('ionosphere', load_data.load_ionosphere()),
         # ('iris', load_data.load_iris()),
         # ('kr-vs-kp', load_data.load_kr_vs_kp()),
-        # ('letter', load_data.load_letter()),
+        ('letter', load_data.load_letter()),
         # ('liver', load_data.load_liver_disorder()),
         # ('lymph', load_data.load_lymph()),
         # ('molecular', load_data.load_molecular()),
         # ('nursery', load_data.load_nursery()),
-        ('optdigits', load_data.load_optdigits()),
-        ('page_blocks', load_data.load_page_blocks()),
-        ('pendigits', load_data.load_pendigits()),
-        ('segment', load_data.load_segment()),
+        # ('optdigits', load_data.load_optdigits()),
+        # ('page_blocks', load_data.load_page_blocks()),
+        # ('pendigits', load_data.load_pendigits()),
+        # ('segment', load_data.load_segment()),
         # ('solar_flare1', load_data.load_solar_flare1()),
         # ('solar_flare2', load_data.load_solar_flare2()),
         # ('sonar', load_data.load_sonar()),
