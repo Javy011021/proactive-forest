@@ -3,6 +3,7 @@ from sklearn.metrics import accuracy_score
 from proactive_forest.sets import BaggingSet
 import copy
 
+
 class TreePruning(ABC):
     @abstractmethod
     def pruning(self, predictor, X, y, encoder):
@@ -100,10 +101,12 @@ class ForestPruning(ABC):
     def pruning(self, predictor, X, y):
         pass
 
+
 class StaticPruning(ForestPruning):
     @abstractmethod
     def pruning(self, predictor, X, y):
         pass
+
 
 class AccuracyPruning(StaticPruning):
 
@@ -134,7 +137,7 @@ class AccuracyPruning(StaticPruning):
             min_delta = 100
             min_delta_tree = None
             best_accuracy = None
-            print('tree', n)
+            # print('tree', n)
             for i in range(len(predictors)):
                 predictor._trees = [tree for j,
                                     tree in enumerate(predictors) if j != i]
@@ -228,6 +231,7 @@ class DynamicPruning(ForestPruning):
     def pruning(self, predictor, X, y, set_generator, ledger):
         pass
 
+
 class WindowThresholdPruning(DynamicPruning):
 
     def __init__(self, window_size=5, diversity_threshold=0.031, accuracy_threshold=0.064, ledger=None):
@@ -244,7 +248,7 @@ class WindowThresholdPruning(DynamicPruning):
         :param y: <numpy array> An array containing the target features
         :return: self
         """
-        
+
         n_estimators = predictor._n_estimators+1
         for i in range(1, n_estimators, self.window_size):
 
@@ -263,7 +267,8 @@ class WindowThresholdPruning(DynamicPruning):
             prev_diversity = predictor.diversity_measure(
                 X_train, y_train, transform=False)
 
-            limit = i + self.window_size if i + self.window_size < n_estimators else n_estimators
+            limit = i + self.window_size if i + \
+                self.window_size < n_estimators else n_estimators
             for j in range(i, limit):
                 new_tree = predictor._add_tree(X_train, y_train, set_generator)
                 if self.ledger:
@@ -274,10 +279,10 @@ class WindowThresholdPruning(DynamicPruning):
             if not (self.accept_trees(predictor, X_test, y_test, prev_diversity, prev_accuracy)):
                 predictor._tree_builder = prev_tree_builder
                 predictor._trees = prev_trees
-            
+
             generator.clear()
         return predictor
-    
+
     def accept_trees(self, predictor, X, y, prev_diversity, prev_accuracy):
         diversity = predictor.diversity_measure(X, y, transform=False)
         accuracy = accuracy_score(y, predictor._no_encoder_predict(X))

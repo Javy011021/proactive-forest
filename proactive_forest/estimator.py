@@ -493,15 +493,15 @@ class DecisionForestClassifier(BaseEstimator, ClassifierMixin):
                                          min_gain_split=self._min_gain_split,
                                          min_samples_split=self._min_samples_split,
                                          split_chooser=self._split_chooser)
-        
+
         if pruning:
             method = WindowThresholdPruning()
             method.pruning(self, X, y, set_generator)
-        else: 
+        else:
             for _ in range(self._n_estimators):
                 self._add_tree(X, y, set_generator)
 
-        return self    
+        return self
 
     def _no_encoder_predict(self, X, check_input=True):
         """
@@ -665,7 +665,7 @@ class DecisionForestClassifier(BaseEstimator, ClassifierMixin):
             result[i] = tree.predict(x)
             # print(tree.predict(x))
         return result
-    
+
     def _add_tree(self, x, y, set_generator):
         ids = set_generator.training_ids()
         x_new = x[ids]
@@ -684,10 +684,10 @@ class DecisionForestClassifier(BaseEstimator, ClassifierMixin):
         set_generator.clear()
 
         return new_tree
-    
+
     def pruning(self, X_test, y_test, pruning='error'):
         method = ForestBasedTreePruning(pruning)
-        return method.pruning(X_test, y_test)
+        return method.pruning(self, X_test, y_test)
 
 
 class ProactiveForestClassifier(DecisionForestClassifier):
@@ -779,10 +779,10 @@ class ProactiveForestClassifier(DecisionForestClassifier):
             method = WindowThresholdPruning(ledger=ledger)
             method.pruning(self, X, y, set_generator)
         else:
-            self.base_fit(X, y, set_generator)
+            self.base_fit(X, y, set_generator, ledger)
 
         return self
-    
+
     def base_fit(self, X, y, set_generator, ledger):
         """
         Trains the decision forest classifier with (X, y).
@@ -792,7 +792,7 @@ class ProactiveForestClassifier(DecisionForestClassifier):
         :param set_generator:
         :param ledger: 
         :return: self
-        """        
+        """
 
         for i in range(1, self._n_estimators+1):
             new_tree = self._add_tree(X, y, set_generator)
@@ -820,5 +820,3 @@ class ProactiveForestClassifier(DecisionForestClassifier):
 
         tree_pruning = method.pruning(self, X_test, y_test)
         return tree_pruning
-  
-    

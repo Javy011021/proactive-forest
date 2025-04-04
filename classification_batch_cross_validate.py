@@ -25,10 +25,9 @@ if __name__ == '__main__':
         train, test = utils.create_k(X.to_numpy(), y.to_numpy(), k=10)
 
         start = time.time()
-        incial_values = 100
 
-        recall, roc_auc, accracy, pcd, presi, final_values = utils.cross_validation_train(
-            fc, train, test, pruning=False)
+        recall, roc_auc, accracy, pcd, presi, incial_values, final_values = utils.cross_validation_train_with_pruning(
+            fc, train, test, pruning="depth")
 
         end = time.time()
         duration = (end-start) / 60

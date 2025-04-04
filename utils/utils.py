@@ -22,7 +22,7 @@ def shuffle_data(data, labels):
     return np.array(x), np.array(y)
 
 
-def create_k(x, y, k=5, type = "skf"):
+def create_k(x, y, k=5, type="skf"):
     train = []
     test = []
     fold = None
@@ -35,7 +35,7 @@ def create_k(x, y, k=5, type = "skf"):
     else:
         raise ValueError(
             "The specified cross-validation type was not recognized.")
-    
+
     for train_index, test_index in fold.split(data, labels):
         x_train, x_test = data[train_index], data[test_index]
         y_train, y_test = labels[train_index], labels[test_index]
@@ -46,14 +46,16 @@ def create_k(x, y, k=5, type = "skf"):
     return train, test
 
 
-def cross_validation_train(model, train, test, pruning=False):
+def cross_validation_train(model, train, test):
+    score_max = 0
     avg_recall = 0
     avg_presi = 0
     avg_auc = 0
     avg_acc = 0
     avg_pcd = 0
+    best_model = None
     a = 1
-    avg_length = 0
+    results = []
     real_y = np.array([], dtype=str)
     predicc_y = np.array([], dtype=str)
     for trainn, testss in zip(train, test):
@@ -63,8 +65,8 @@ def cross_validation_train(model, train, test, pruning=False):
         y_train = trainn[1]
         y_test = testss[1]
         print("Para el", a, " k conjunto de prueba y entrenamiento")
-        
-        model.fit(x_train, y_train, pruning)
+
+        model.fit(x_train, y_train)
         # score_auc = calculate_roc_auc(np.unique(y_train) ,np.unique(y_test), model, x_test, y_test)
         score_auc = 0
         predictions = model.predict(x_test)
@@ -85,7 +87,6 @@ def cross_validation_train(model, train, test, pruning=False):
         avg_presi = score_presi + avg_presi
         avg_acc = score_acc + avg_acc
         avg_pcd = pcd + avg_pcd
-        avg_length = len(model._trees) + avg_length
 
         # print("The recall of group", a, "is", score_recll, ", roc_auc is", score_auc,", accuracy is", score_acc, "and diversity PCD is", pcd)
         a += 1
@@ -95,14 +96,15 @@ def cross_validation_train(model, train, test, pruning=False):
     avg_acc = avg_acc/len(train)
     avg_pcd = avg_pcd/len(train)
     avg_presi = avg_presi/len(train)
-    avg_length = avg_length/len(train)
 
+    # print("matriz final")
     # print("para y", np.unique(real_y),"para predict",np.unique(predicc_y))
     # print(confusion_matrix(real_y, predicc_y))
 
     print("The final cross_val recall is", avg_recall, ", roc_auc is", avg_auc,
           ", precision is", avg_presi, ", accuracy is", avg_acc, "and diversity PCD is", avg_pcd)
-    return avg_recall, avg_auc, avg_acc, avg_pcd, avg_presi, avg_length
+    # print("Max score is", score_max)
+    return avg_recall, avg_auc, avg_acc, avg_pcd, avg_presi
 
 
 def calculate_roc_auc(y_train_class, y_test_class, model, x_test, y_test):
@@ -131,7 +133,7 @@ def calculate_roc_auc(y_train_class, y_test_class, model, x_test, y_test):
 
 
 # Método para dividir el conjunto de entrenamiento
-def train_test_splitt(train_data, train_labels, test_size=0.2, shuffle = False):
+def train_test_splitt(train_data, train_labels, test_size=0.2, shuffle=False):
     if shuffle:
         train_data, train_labels = shuffle_data(train_data, train_labels)
 
@@ -140,3 +142,74 @@ def train_test_splitt(train_data, train_labels, test_size=0.2, shuffle = False):
     y_train, y_test = train_labels[:split_i], train_labels[split_i:]
 
     return x_train, x_test, y_train, y_test
+
+
+def cross_validation_train_with_pruning(model, train, test, pruning=None):
+    avg_recall = 0
+    avg_presi = 0
+    avg_auc = 0
+    avg_acc = 0
+    avg_pcd = 0
+    avg_initial_size = 0
+    avg_final_size = 0
+    a = 1
+
+    for trainn, testss in zip(train, test):
+        x_train = trainn[0]
+        x_test = testss[0]
+
+        y_train = trainn[1]
+        y_test = testss[1]
+        print("Para el", a, " k conjunto de prueba y entrenamiento")
+
+        model.fit(x_train, y_train, pruning if pruning ==
+                  "window_threshold" else False)
+
+        score_recll, score_auc, score_acc, pcd, score_presi = get_metrics(
+            model, x_test, y_test, True if pruning == "window_threshold" else False)
+
+        if pruning and pruning != "window_threshold":
+            model_initial_size, model_final_size = model.pruning(
+                x_test, y_test, pruning, accuracy=score_auc)
+            score_recll, score_auc, score_acc, pcd, score_presi = get_metrics(
+                model, x_test, y_test)
+        else:
+            model_initial_size = 100
+            model_final_size = len(model._trees)
+
+        avg_recall = score_recll + avg_recall
+        avg_auc = score_auc + avg_auc
+        avg_presi = score_presi + avg_presi
+        avg_acc = score_acc + avg_acc
+        avg_pcd = pcd + avg_pcd
+        avg_initial_size = model_initial_size + avg_initial_size
+        avg_final_size = model_final_size + avg_final_size
+
+        a += 1
+
+    avg_recall = avg_recall/len(train)
+    avg_auc = avg_auc/len(train)
+    avg_acc = avg_acc/len(train)
+    avg_pcd = avg_pcd/len(train)
+    avg_presi = avg_presi/len(train)
+    model_initial_size = avg_initial_size/len(train)
+    model_final_size = avg_final_size/len(train)
+
+    print("The final cross_val recall is", avg_recall, ", roc_auc is", avg_auc,
+          ", precision is", avg_presi, ", accuracy is", avg_acc, "and diversity PCD is", avg_pcd)
+    return avg_recall, avg_auc, avg_acc, avg_pcd, avg_presi, model_initial_size, model_final_size
+
+
+def get_metrics(model, x_test, y_test, show_matix=True):
+    score_auc = 0
+    predictions = model.predict(x_test)
+    if show_matix:
+        conf_matrx = confusion_matrix(y_test, predictions)
+        print(conf_matrx)
+
+    score_recll = recall_score(y_test, predictions, average='macro')
+    score_presi = precision_score(y_test, predictions, average='macro')
+    score_acc = accuracy_score(y_test, predictions)
+    pcd = model.diversity_measure(x_test, y_test)
+
+    return score_recll, score_auc, score_acc, pcd, score_presi
