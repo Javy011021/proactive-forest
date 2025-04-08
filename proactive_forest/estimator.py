@@ -495,8 +495,8 @@ class DecisionForestClassifier(BaseEstimator, ClassifierMixin):
                                          split_chooser=self._split_chooser)
 
         if pruning:
-            method = WindowThresholdPruning()
-            method.pruning(self, X, y, set_generator)
+            method = WindowThresholdPruning(set_generator=set_generator)
+            method.pruning(self, X, y)
         else:
             for _ in range(self._n_estimators):
                 self._add_tree(X, y, set_generator)
@@ -776,10 +776,10 @@ class ProactiveForestClassifier(DecisionForestClassifier):
                                          split_chooser=self._split_chooser)
 
         if pruning:
-            method = WindowThresholdPruning(ledger=ledger)
-            method.pruning(self, X, y, set_generator)
+            method = WindowThresholdPruning(set_generator=set_generator, ledger=ledger)
+            method.pruning(self, X, y)
         else:
-            self.base_fit(X, y, set_generator, ledger)
+            self.base_fit(X, y, set_generator)
 
         return self
 

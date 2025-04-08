@@ -227,20 +227,26 @@ class ForestBasedTreePruning(StaticPruning):
 
 
 class DynamicPruning(ForestPruning):
+
+    def __init__(self, set_generator):
+        self.set_generator = set_generator
+
     @abstractmethod
-    def pruning(self, predictor, X, y, set_generator, ledger):
+    def pruning(self, predictor, X, y):
         pass
 
 
 class WindowThresholdPruning(DynamicPruning):
 
-    def __init__(self, window_size=5, diversity_threshold=0.031, accuracy_threshold=0.064, ledger=None):
+    def __init__(self, set_generator, window_size=5, diversity_threshold=0.020, accuracy_threshold=0.040, ledger=None):
+        super().__init__(set_generator)
         self.window_size = window_size
         self.diversity_threshold = diversity_threshold
         self.accuracy_threshold = accuracy_threshold
         self.ledger = ledger
 
-    def pruning(self, predictor, X, y, set_generator):
+
+    def pruning(self, predictor, X, y):
         """
         Trains and prune  the decision forest classifier with (X, y).
 
@@ -270,7 +276,7 @@ class WindowThresholdPruning(DynamicPruning):
             limit = i + self.window_size if i + \
                 self.window_size < n_estimators else n_estimators
             for j in range(i, limit):
-                new_tree = predictor._add_tree(X_train, y_train, set_generator)
+                new_tree = predictor._add_tree(X_train, y_train, self.set_generator)
                 if self.ledger:
                     rate = j/predictor._n_estimators
                     self.ledger.update_probabilities(new_tree, rate=rate)
