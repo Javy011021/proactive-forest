@@ -19,8 +19,8 @@ if __name__ == '__main__':
         X, y = loader[0], loader[1]
 
         # para ejecutar proactive forest------->COMENTAR EL ALGORITMO QUE NO SE VALLA A UTILIZAR
-        fc = ProactiveForestClassifier(alpha=0.1)
-        # fc = DecisionForestClassifier()#para ejecutar random forest
+        # fc = ProactiveForestClassifier(alpha=0.1)
+        fc = DecisionForestClassifier()#para ejecutar random forest
 
         train, test = utils.create_k(X.to_numpy(), y.to_numpy(), k=10)
 
