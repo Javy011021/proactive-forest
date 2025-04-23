@@ -102,18 +102,18 @@ def get_all():
     data = [
         # ('balance_scale', load_data.load_balance_scale()),
         # ('car', load_data.load_car()),
-        # ('cmc', load_data.load_cmc()),
+        ('cmc', load_data.load_cmc()),
         # ('credit-g', load_data.load_credit()),
         # ('diabetes', load_data.load_diabetes()),
         # ('ecoli', load_data.load_ecoli()),
         # ('flags', load_data.load_flags()),
         # ('glass', load_data.load_glass()),
         # ('haberman', load_data.load_haberman()),
-        # ('heart-statlog', load_data.load_heart_statlog()),
+        ('heart-statlog', load_data.load_heart_statlog()),
         # ('ionosphere', load_data.load_ionosphere()),
         # ('iris', load_data.load_iris()),
-        # ('kr-vs-kp', load_data.load_kr_vs_kp()),
-        ('letter', load_data.load_letter()),
+        ('kr-vs-kp', load_data.load_kr_vs_kp()),
+        # ('letter', load_data.load_letter()),
         # ('liver', load_data.load_liver_disorder()),
         # ('lymph', load_data.load_lymph()),
         # ('molecular', load_data.load_molecular()),
@@ -124,13 +124,28 @@ def get_all():
         # ('segment', load_data.load_segment()),
         # ('solar_flare1', load_data.load_solar_flare1()),
         # ('solar_flare2', load_data.load_solar_flare2()),
-        # ('sonar', load_data.load_sonar()),
+        ('sonar', load_data.load_sonar()),
         # ('spambase', load_data.load_spambase()),
         # ('splice', load_data.load_splice()),
-        # ('tae', load_data.load_tae()),
+        ('tae', load_data.load_tae()),
         # ('vehicle', load_data.load_vehicle()),
         # ('vowel', load_data.load_vowel()),
         # ('wdbc', load_data.load_wdbc()),
         # ('wine', load_data.load_wine())
+    ]
+    return data
+
+def get_batch_extra():
+    data = [
+        ('abalone', load_data.load_abalone()),
+        ('australian', load_data.load_australian()),
+        ('column', load_data.load_column()),
+        ('german', load_data.load_german()),
+        ('musk', load_data.load_musk()),
+        ('parkinson', load_data.load_parkinson()),
+        ('tic-tac-toe', load_data.load_tic_tac_toe()),
+        ('wholesale', load_data.load_wholesale()),
+        ('yeast', load_data.load_yeast()),
+        ('zoo', load_data.load_zoo())
     ]
     return data

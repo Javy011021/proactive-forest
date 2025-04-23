@@ -317,3 +317,74 @@ def load_mfeat_fourier():
     encoder = LabelEncoder()
     y = pd.Series(encoder.fit_transform(y))
     return X, y
+
+def load_zoo():
+    dataset = pd.read_csv('./data/zoo.csv')
+    dataset = dataset.sample(frac=1).reset_index(drop=True)
+    y = dataset['class']
+    dataset = dataset.drop('animal_name', axis=1)
+    X = dataset.drop('class', axis=1)
+    return X, y
+
+def load_yeast():
+    dataset = pd.read_csv('./data/yeast.csv')
+    dataset = dataset.sample(frac=1).reset_index(drop=True)
+    y = dataset['class']
+    X = dataset.drop('class', axis=1)
+    return X, y
+
+def load_wholesale():
+    dataset = pd.read_csv('./data/wholesale.csv')
+    dataset = dataset.sample(frac=1).reset_index(drop=True)
+    y = dataset['class']
+    X = dataset.drop('class', axis=1)
+    return X, y
+
+def load_tic_tac_toe():
+    dataset = pd.read_csv('./data/tic-tac-toe.csv')
+    dataset = dataset.sample(frac=1).reset_index(drop=True)
+    y = dataset['class']
+    X = dataset.drop('class', axis=1)
+    return X, y
+
+def load_parkinson():
+    dataset = pd.read_csv('./data/parkinson.csv')
+    dataset = dataset.sample(frac=1).reset_index(drop=True)
+    y = dataset['class']
+    X = dataset.drop('class', axis=1)
+    return X, y
+
+def load_musk():
+    dataset = pd.read_csv('./data/musk_version_1.csv')
+    dataset = dataset.sample(frac=1).reset_index(drop=True)
+    y = dataset['class']
+    X = dataset.drop('class', axis=1)
+    return X, y
+
+def load_german():
+    dataset = pd.read_csv('./data/german.csv')
+    dataset = dataset.sample(frac=1).reset_index(drop=True)
+    y = dataset['class']
+    X = dataset.drop('class', axis=1)
+    return X, y
+
+def load_column():
+    dataset = pd.read_csv('./data/column.csv')
+    dataset = dataset.sample(frac=1).reset_index(drop=True)
+    y = dataset['class']
+    X = dataset.drop('class', axis=1)
+    return X, y
+
+def load_australian():
+    dataset = pd.read_csv('./data/australian.csv')
+    dataset = dataset.sample(frac=1).reset_index(drop=True)
+    y = dataset['class']
+    X = dataset.drop('class', axis=1)
+    return X, y
+
+def load_abalone():
+    dataset = pd.read_csv('./data/abalone.csv')
+    dataset = dataset.sample(frac=1).reset_index(drop=True)
+    y = dataset['class']
+    X = dataset.drop('class', axis=1)
+    return X, y

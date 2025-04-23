@@ -13,21 +13,21 @@ if __name__ == '__main__':
 
     data = pd.DataFrame()
 
-    for name, loader in load_batch.get_batch_4():
+    for name, loader in load_batch.get_all():
         saver = pd.DataFrame()
         data_name = name
         X, y = loader[0], loader[1]
 
         # para ejecutar proactive forest------->COMENTAR EL ALGORITMO QUE NO SE VALLA A UTILIZAR
-        # fc = ProactiveForestClassifier(alpha=0.1)
-        fc = DecisionForestClassifier()#para ejecutar random forest
+        fc = ProactiveForestClassifier(alpha=0.1)
+        # fc = DecisionForestClassifier()#para ejecutar random forest
 
         train, test = utils.create_k(X.to_numpy(), y.to_numpy(), k=10)
 
         start = time.time()
 
         recall, roc_auc, accracy, pcd, presi, incial_values, final_values = utils.cross_validation_train_with_pruning(
-            fc, train, test)
+            fc, train, test, pruning="window_threshold")
 
         end = time.time()
         duration = (end-start) / 60
