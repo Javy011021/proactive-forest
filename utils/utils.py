@@ -166,7 +166,7 @@ def cross_validation_train_with_pruning(model, train, test, pruning=None):
                   "window_threshold" else False)
 
         score_recll, score_auc, score_acc, pcd, score_presi = get_metrics(
-            model, x_test, y_test, True if pruning == "window_threshold" else False)
+            model, x_test, y_test, True if (not pruning) or pruning == "window_threshold" else False)
 
         if pruning and pruning != "window_threshold":
             model_initial_size, model_final_size = model.pruning(

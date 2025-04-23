@@ -15,6 +15,8 @@ from proactive_forest.splits import resolve_split_selection
 from proactive_forest.metrics import resolve_split_criterion
 from proactive_forest.feature_selection import resolve_feature_selection
 
+import pandas as pd
+
 
 class DecisionTreeClassifier(BaseEstimator, ClassifierMixin):
     def __init__(self,
@@ -776,10 +778,11 @@ class ProactiveForestClassifier(DecisionForestClassifier):
                                          split_chooser=self._split_chooser)
 
         if pruning:
-            method = WindowThresholdPruning(set_generator=set_generator, ledger=ledger)
+            method = WindowThresholdPruning(
+                set_generator=set_generator, ledger=ledger)
             method.pruning(self, X, y)
         else:
-            self.base_fit(X, y, set_generator)
+            self.base_fit(X, y, set_generator, ledger)
 
         return self
 
@@ -820,3 +823,19 @@ class ProactiveForestClassifier(DecisionForestClassifier):
 
         tree_pruning = method.pruning(self, X_test, y_test)
         return tree_pruning
+
+    def save_metrics_progresive(self, X_test, y_test, name="db"):
+        saver = pd.DataFrame()
+        origin_trees = self._trees.copy()
+        self._trees = []
+        for i in range(len(origin_trees)):
+            self._trees.append(origin_trees[i])
+            div = self.diversity_measure(X_test, y_test)
+            acc = accuracy_score(y_test, self.predict(X_test))
+
+            # print('div:  ', div, '\n acc:  ', acc)
+
+            saver[f'tree {i+1}'] = pd.Series(
+                [acc, div], index=['Accuracy_score', 'Diversity_PCD'])
+
+        saver.T.to_excel(f"./results/metrics_{name}.xlsx", header=True, index=True)
