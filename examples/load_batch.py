@@ -137,15 +137,16 @@ def get_all():
 
 def get_batch_extra():
     data = [
-        ('abalone', load_data.load_abalone()),
-        ('australian', load_data.load_australian()),
-        ('column', load_data.load_column()),
-        ('german', load_data.load_german()),
-        ('musk', load_data.load_musk()),
-        ('parkinson', load_data.load_parkinson()),
-        ('tic-tac-toe', load_data.load_tic_tac_toe()),
-        ('wholesale', load_data.load_wholesale()),
-        ('yeast', load_data.load_yeast()),
-        ('zoo', load_data.load_zoo())
+        # ('cleveland', load_data.load_cleveland()),
+        # ('australian', load_data.load_australian()),
+        # ('column', load_data.load_column()),
+        # ('german', load_data.load_german()),
+        # ('musk', load_data.load_musk()),
+        # ('parkinson', load_data.load_parkinson()),
+        # ('tic-tac-toe', load_data.load_tic_tac_toe()),
+        ('wineq_r', load_data.load_wineq_r()),
+        # ('yeast', load_data.load_yeast()),
+        # ('zoo', load_data.load_zoo()),
+        ('load_landsat', load_data.load_landsat())
     ]
     return data

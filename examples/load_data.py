@@ -333,6 +333,13 @@ def load_yeast():
     X = dataset.drop('class', axis=1)
     return X, y
 
+def load_wineq_r():
+    dataset = pd.read_csv('./data/winequality-red.csv')
+    dataset = dataset.sample(frac=1).reset_index(drop=True)
+    y = dataset['class']
+    X = dataset.drop('class', axis=1)
+    return X, y
+
 def load_wholesale():
     dataset = pd.read_csv('./data/wholesale.csv')
     dataset = dataset.sample(frac=1).reset_index(drop=True)
@@ -382,8 +389,15 @@ def load_australian():
     X = dataset.drop('class', axis=1)
     return X, y
 
-def load_abalone():
-    dataset = pd.read_csv('./data/abalone.csv')
+def load_cleveland():
+    dataset = pd.read_csv('./data/cleveland.csv')
+    dataset = dataset.sample(frac=1).reset_index(drop=True)
+    y = dataset['class']
+    X = dataset.drop('class', axis=1)
+    return X, y
+
+def load_landsat():
+    dataset = pd.read_csv('./data/landsat.csv')
     dataset = dataset.sample(frac=1).reset_index(drop=True)
     y = dataset['class']
     X = dataset.drop('class', axis=1)
