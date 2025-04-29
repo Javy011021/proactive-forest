@@ -49,7 +49,7 @@ class ReduceErrorPruning(TreePruning):
                 predictor.nodes = changed_nodes[max_index]
                 predictor.last_node_id = len(changed_nodes[max_index])
                 predictor._order_branchs(predictor.nodes)
-                predictor.reduce_prune(X, y, encoder)
+                predictor.prune(X, y, encoder, 'error')
 
 
 class DepthPruning(TreePruning):
