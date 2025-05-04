@@ -124,13 +124,14 @@ class AccuracyPruning(StaticPruning):
         """
 
         limit = 10
-        predictors = predictor._trees
+        predictors = predictor._trees.copy()
         initial_len = len(predictors)
         if not self.accuracy:
             accuracy = accuracy_score(y, predictor.predict(X))
         else:
             accuracy = self.accuracy
         initial_accuracy = accuracy
+        prev_best_accuracy = initial_accuracy
 
         n = 1
         while len(predictors) > limit:
@@ -151,11 +152,12 @@ class AccuracyPruning(StaticPruning):
                     best_accuracy = pf_accuracy
 
             n += 1
-            if initial_accuracy <= best_accuracy:
+            if initial_accuracy <= best_accuracy and prev_best_accuracy <= best_accuracy:
                 if min_delta_tree != None:
                     predictors = [tree for j, tree in enumerate(
                         predictors) if j != min_delta_tree]
                     accuracy = best_accuracy
+                    prev_best_accuracy = best_accuracy
             else:
                 break
 
