@@ -25,10 +25,12 @@ class ModelOptimization:
 
         fc = ProactiveForestClassifier(alpha=0.1)
         # fc = DecisionForestClassifier()#para ejecutar random forest
-        recall, roc_auc, accracy, pcd, presi, final_values = utils.cross_validation_train(
+        recall, roc_auc, accracy, pcd, presi = utils.cross_validation_test(
             fc,
             self.train,
-            self.test)
+            self.test,
+            accuracy_threshold,
+            diversity_threshold)
         
         print(f'Total of trees: {len(fc._trees)}')
 
@@ -49,7 +51,7 @@ if __name__ == '__main__':
 
         study = optuna.create_study(direction="maximize")
 
-        study.optimize(model.objective, n_trials=100)
+        study.optimize(model.objective, n_trials=1)
 
         print(f"Best parameters: {study.best_params}")
         print(f"Best score: {study.best_value}")

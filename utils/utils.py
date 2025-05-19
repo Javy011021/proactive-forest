@@ -213,3 +213,66 @@ def get_metrics(model, x_test, y_test, show_matix=True):
     pcd = model.diversity_measure(x_test, y_test)
 
     return score_recll, score_auc, score_acc, pcd, score_presi
+
+
+
+
+def cross_validation_test(model, train, test, acc_threshold, div_threshold):
+    score_max = 0
+    avg_recall = 0
+    avg_presi = 0
+    avg_auc = 0
+    avg_acc = 0
+    avg_pcd = 0
+    best_model = None
+    a = 1
+    results = []
+    real_y = np.array([], dtype=str)
+    predicc_y = np.array([], dtype=str)
+    for trainn, testss in zip(train, test):
+        x_train = trainn[0]
+        x_test = testss[0]
+
+        y_train = trainn[1]
+        y_test = testss[1]
+        print("Para el", a, " k conjunto de prueba y entrenamiento")
+
+        model.test_threshold(x_train, y_train, diversity_threshold=div_threshold, accuracy_threshold=acc_threshold)
+        # score_auc = calculate_roc_auc(np.unique(y_train) ,np.unique(y_test), model, x_test, y_test)
+        score_auc = 0
+        predictions = model.predict(x_test)
+        conf_matrx = confusion_matrix(y_test, predictions)
+        # print("para y", np.unique(y_test),"para predict",np.unique(predictions))
+
+        real_y = np.append(real_y, y_test)
+        predicc_y = np.append(predicc_y, predictions)
+
+        print(conf_matrx)
+        score_recll = recall_score(y_test, predictions, average='macro')
+        score_presi = precision_score(y_test, predictions, average='macro')
+        score_acc = accuracy_score(y_test, predictions)
+        pcd = model.diversity_measure(x_test, y_test)
+
+        avg_recall = score_recll + avg_recall
+        avg_auc = score_auc + avg_auc
+        avg_presi = score_presi + avg_presi
+        avg_acc = score_acc + avg_acc
+        avg_pcd = pcd + avg_pcd
+
+        # print("The recall of group", a, "is", score_recll, ", roc_auc is", score_auc,", accuracy is", score_acc, "and diversity PCD is", pcd)
+        a += 1
+
+    avg_recall = avg_recall/len(train)
+    avg_auc = avg_auc/len(train)
+    avg_acc = avg_acc/len(train)
+    avg_pcd = avg_pcd/len(train)
+    avg_presi = avg_presi/len(train)
+
+    # print("matriz final")
+    # print("para y", np.unique(real_y),"para predict",np.unique(predicc_y))
+    # print(confusion_matrix(real_y, predicc_y))
+
+    print("The final cross_val recall is", avg_recall, ", roc_auc is", avg_auc,
+          ", precision is", avg_presi, ", accuracy is", avg_acc, "and diversity PCD is", avg_pcd)
+    # print("Max score is", score_max)
+    return avg_recall, avg_auc, avg_acc, avg_pcd, avg_presi

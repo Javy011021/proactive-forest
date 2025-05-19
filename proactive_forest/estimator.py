@@ -838,4 +838,35 @@ class ProactiveForestClassifier(DecisionForestClassifier):
             saver[f'tree {i+1}'] = pd.Series(
                 [acc, div], index=['Accuracy_score', 'Diversity_PCD'])
 
-        saver.T.to_excel(f"./results/metrics_{name}.xlsx", header=True, index=True)
+        saver.T.to_excel(
+            f"./results/metrics_{name}.xlsx", header=True, index=True)
+
+
+    def test_threshold(self, X, y, diversity_threshold=0.014, accuracy_threshold=0.029):
+        X, y = check_X_y(X, y, dtype=None)
+        self._encoder = LabelEncoder()
+        y = self._encoder.fit_transform(y)
+        self._n_instances, self._n_features = X.shape
+        self._n_classes = utils.count_classes(y)
+        self._trees = []
+
+        if self._bootstrap:
+            set_generator = BaggingSet(self._n_instances)
+        else:
+            set_generator = SimpleSet(self._n_instances)
+
+        ledger = FIProbabilityLedger(
+            probabilities=self._feature_prob, n_features=self._n_features, alpha=self.alpha)
+
+        self._tree_builder = TreeBuilder(split_criterion=self._split_criterion,
+                                        feature_prob=ledger.probabilities,
+                                        feature_selection=self._feature_selection,
+                                        max_depth=self._max_depth,
+                                        min_samples_leaf=self._min_samples_leaf,
+                                        min_gain_split=self._min_gain_split,
+                                        min_samples_split=self._min_samples_split,
+                                        split_chooser=self._split_chooser)
+
+        method = WindowThresholdPruning(
+            set_generator=set_generator, ledger=ledger, diversity_threshold=diversity_threshold, accuracy_threshold=accuracy_threshold)
+        return method.pruning(self, X, y)
