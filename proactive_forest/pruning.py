@@ -162,6 +162,7 @@ class AccuracyPruning(StaticPruning):
                 break
 
         predictor._trees = predictors
+        predictor._n_estimators = len(predictors)
         return initial_len, len(predictors)
 
 
@@ -203,6 +204,7 @@ class EROSbPruning(StaticPruning):
             n += 1
 
         predictor._trees = trees
+        predictor._n_estimators = len(trees)
         return initial_len, len(trees)
 
 
@@ -288,12 +290,19 @@ class WindowThresholdPruning(DynamicPruning):
                 predictor._tree_builder = prev_tree_builder
                 predictor._trees = prev_trees
 
+            print('Cant árboles: ', len(predictor._trees))
+
             generator.clear()
+        predictor._n_estimators = len(predictor._trees)
         return predictor
 
     def accept_trees(self, predictor, X, y, prev_diversity, prev_accuracy):
         diversity = predictor.diversity_measure(X, y, transform=False)
         accuracy = accuracy_score(y, predictor._no_encoder_predict(X))
+
+        cond = prev_accuracy - accuracy > self.accuracy_threshold or (prev_diversity != 1 and prev_diversity - diversity > self.diversity_threshold)
+        print('Condición: ', not cond)
+
         if prev_accuracy - accuracy > self.accuracy_threshold or (prev_diversity != 1 and prev_diversity - diversity > self.diversity_threshold):
             return False
         return True

@@ -3,9 +3,6 @@ from examples import load_data
 
 def get_my_batch():
     data = [
-        # ('ionosphere', load_data.load_ionosphere()),
-        # ('nursery', load_data.load_nursery()),
-        # ('kr-vs-kp', load_data.load_kr_vs_kp())
         ('iris', load_data.load_iris())
 
     ]
@@ -37,7 +34,7 @@ def get_batch_2():
 def get_batch_3():
     data = [
         ('ionosphere', load_data.load_ionosphere()),
-        ('iris', load_data.load_iris()),
+        # ('iris', load_data.load_iris()),
         ('kr-vs-kp', load_data.load_kr_vs_kp()),
         # ('letter', load_data.load_letter()),
         ('liver', load_data.load_liver_disorder())
@@ -47,10 +44,10 @@ def get_batch_3():
 
 def get_batch_4():
     data = [
-        ('lymph', load_data.load_lymph()),
-        ('molecular', load_data.load_molecular()),
-        ('nursery', load_data.load_nursery()),
-        ('optdigits', load_data.load_optdigits()),
+        # ('lymph', load_data.load_lymph()),
+        # ('molecular', load_data.load_molecular()),
+        # ('nursery', load_data.load_nursery()),
+        # ('optdigits', load_data.load_optdigits()),
         ('page_blocks', load_data.load_page_blocks())
     ]
     return data
@@ -58,20 +55,20 @@ def get_batch_4():
 
 def get_batch_5():
     data = [
-        ('pendigits', load_data.load_pendigits()),
-        ('segment', load_data.load_segment()),
-        ('solar_flare1', load_data.load_solar_flare1()),
-        ('solar_flare2', load_data.load_solar_flare2()),
-        ('sonar', load_data.load_sonar())
+        # ('pendigits', load_data.load_pendigits()),
+        # ('segment', load_data.load_segment()),
+        # ('solar_flare1', load_data.load_solar_flare1()),
+        # ('solar_flare2', load_data.load_solar_flare2()),
+        # ('sonar', load_data.load_sonar())
     ]
     return data
 
 
 def get_batch_6():
     data = [
-        ('spambase', load_data.load_spambase()),
-        ('splice', load_data.load_splice()),
-        ('tae', load_data.load_tae()),
+        # ('spambase', load_data.load_spambase()),
+        # ('splice', load_data.load_splice()),
+        # ('tae', load_data.load_tae()),
         ('vehicle', load_data.load_vehicle()),
         ('vowel', load_data.load_vowel())
     ]

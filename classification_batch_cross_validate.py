@@ -13,7 +13,7 @@ if __name__ == '__main__':
 
     data = pd.DataFrame()
 
-    for name, loader in load_batch.get_batch_7():
+    for name, loader in load_batch.get_my_batch():
         saver = pd.DataFrame()
         data_name = name
         X, y = loader[0], loader[1]
@@ -27,7 +27,7 @@ if __name__ == '__main__':
         start = time.time()
 
         recall, roc_auc, accracy, pcd, presi, incial_values, final_values = utils.cross_validation_train_with_pruning(
-            fc, train, test, pruning="accuracy")
+            fc, train, test, pruning="window_threshold")
 
         end = time.time()
         duration = (end-start) / 60
