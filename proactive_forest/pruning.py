@@ -242,7 +242,7 @@ class DynamicPruning(ForestPruning):
 
 class WindowThresholdPruning(DynamicPruning):
 
-    def __init__(self, set_generator, window_size=5, diversity_threshold=0.014, accuracy_threshold=0.029, ledger=None):
+    def __init__(self, set_generator, window_size=3, diversity_threshold=0.014, accuracy_threshold=0.029, ledger=None):
         super().__init__(set_generator)
         self.window_size = window_size
         self.diversity_threshold = diversity_threshold
@@ -290,10 +290,10 @@ class WindowThresholdPruning(DynamicPruning):
                 predictor._tree_builder = prev_tree_builder
                 predictor._trees = prev_trees
 
-            print('Cant árboles: ', len(predictor._trees))
+            # print('Cant árboles: ', len(predictor._trees))
 
             generator.clear()
-        predictor._n_estimators = len(predictor._trees)
+        # predictor._n_estimators = len(predictor._trees)
         return predictor
 
     def accept_trees(self, predictor, X, y, prev_diversity, prev_accuracy):
@@ -301,7 +301,7 @@ class WindowThresholdPruning(DynamicPruning):
         accuracy = accuracy_score(y, predictor._no_encoder_predict(X))
 
         cond = prev_accuracy - accuracy > self.accuracy_threshold or (prev_diversity != 1 and prev_diversity - diversity > self.diversity_threshold)
-        print('Condición: ', not cond)
+        # print('Condición: ', not cond)
 
         if prev_accuracy - accuracy > self.accuracy_threshold or (prev_diversity != 1 and prev_diversity - diversity > self.diversity_threshold):
             return False

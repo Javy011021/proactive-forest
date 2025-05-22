@@ -3,8 +3,12 @@ from examples import load_data
 
 def get_my_batch():
     data = [
-        ('iris', load_data.load_iris())
-
+        ('balance_scale', load_data.load_balance_scale()),
+        ('credit-g', load_data.load_credit()),
+        ('wdbc', load_data.load_wdbc()),
+        ('haberman', load_data.load_haberman()),
+        ('ionosphere', load_data.load_ionosphere()),
+        ('molecular', load_data.load_molecular())
     ]
     return data
 
