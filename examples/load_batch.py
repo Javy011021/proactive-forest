@@ -37,11 +37,11 @@ def get_batch_2():
 
 def get_batch_3():
     data = [
-        ('ionosphere', load_data.load_ionosphere()),
-        # ('iris', load_data.load_iris()),
-        ('kr-vs-kp', load_data.load_kr_vs_kp()),
+        # ('ionosphere', load_data.load_ionosphere()),
+        ('iris', load_data.load_iris()),
+        # ('kr-vs-kp', load_data.load_kr_vs_kp()),
         # ('letter', load_data.load_letter()),
-        ('liver', load_data.load_liver_disorder())
+        # ('liver', load_data.load_liver_disorder())
     ]
     return data
 

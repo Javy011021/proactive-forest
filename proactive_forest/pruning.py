@@ -242,7 +242,7 @@ class DynamicPruning(ForestPruning):
 
 class WindowThresholdPruning(DynamicPruning):
 
-    def __init__(self, set_generator, window_size=3, diversity_threshold=0.014, accuracy_threshold=0.029, ledger=None):
+    def __init__(self, set_generator, window_size=5, diversity_threshold=0.014, accuracy_threshold=0.029, ledger=None):
         super().__init__(set_generator)
         self.window_size = window_size
         self.diversity_threshold = diversity_threshold

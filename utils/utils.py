@@ -1,4 +1,6 @@
+import time
 import numpy as np
+import pandas as pd
 from sklearn.model_selection import KFold, StratifiedKFold
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import recall_score, roc_auc_score, confusion_matrix, accuracy_score, precision_score
@@ -152,6 +154,7 @@ def cross_validation_train_with_pruning(model, train, test, pruning=None):
     avg_pcd = 0
     avg_initial_size = 0
     avg_final_size = 0
+    avg_time = 0
     a = 1
 
     for trainn, testss in zip(train, test):
@@ -165,17 +168,18 @@ def cross_validation_train_with_pruning(model, train, test, pruning=None):
         model.fit(x_train, y_train, pruning if pruning ==
                   "window_threshold" else False)
 
-        score_recll, score_auc, score_acc, pcd, score_presi = get_metrics(
+        score_recll, score_auc, score_acc, pcd, score_presi, duration = get_metrics(
             model, x_test, y_test, True if (not pruning) or pruning == "window_threshold" else False)
 
         if pruning and pruning != "window_threshold":
             model_initial_size, model_final_size = model.pruning(
                 x_test, y_test, pruning, accuracy=score_auc)
-            score_recll, score_auc, score_acc, pcd, score_presi = get_metrics(
+            score_recll, score_auc, score_acc, pcd, score_presi, _ = get_metrics(
                 model, x_test, y_test)
         else:
             model_initial_size = 100
             model_final_size = len(model._trees)
+            avg_time = duration + avg_time
 
         avg_recall = score_recll + avg_recall
         avg_auc = score_auc + avg_auc
@@ -197,11 +201,12 @@ def cross_validation_train_with_pruning(model, train, test, pruning=None):
 
     print("The final cross_val recall is", avg_recall, ", roc_auc is", avg_auc,
           ", precision is", avg_presi, ", accuracy is", avg_acc, "and diversity PCD is", avg_pcd)
-    return avg_recall, avg_auc, avg_acc, avg_pcd, avg_presi, model_initial_size, model_final_size
+    return avg_recall, avg_auc, avg_acc, avg_pcd, avg_presi, model_initial_size, model_final_size, avg_time/len(train)
 
 
 def get_metrics(model, x_test, y_test, show_matix=True):
     score_auc = 0
+    start = time.time()
     predictions = model.predict(x_test)
     if show_matix:
         conf_matrx = confusion_matrix(y_test, predictions)
@@ -211,8 +216,11 @@ def get_metrics(model, x_test, y_test, show_matix=True):
     score_presi = precision_score(y_test, predictions, average='macro')
     score_acc = accuracy_score(y_test, predictions)
     pcd = model.diversity_measure(x_test, y_test)
+    
+    end = time.time()
+    duration = (end-start) / 60
 
-    return score_recll, score_auc, score_acc, pcd, score_presi
+    return score_recll, score_auc, score_acc, pcd, score_presi, duration
 
 
 

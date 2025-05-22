@@ -13,7 +13,7 @@ if __name__ == '__main__':
 
     data = pd.DataFrame()
 
-    for name, loader in load_batch.get_my_batch():
+    for name, loader in load_batch.get_batch_3():
         saver = pd.DataFrame()
         data_name = name
         X, y = loader[0], loader[1]
@@ -26,16 +26,16 @@ if __name__ == '__main__':
 
         start = time.time()
 
-        recall, roc_auc, accracy, pcd, presi, incial_values, final_values = utils.cross_validation_train_with_pruning(
+        recall, roc_auc, accracy, pcd, presi, incial_values, final_values, avg_duration = utils.cross_validation_train_with_pruning(
             fc, train, test, pruning="window_threshold")
 
         end = time.time()
         duration = (end-start) / 60
 
         print(f'The function was executed in {duration} minutes.')
-        data[data_name] = pd.Series([recall, roc_auc, accracy, pcd, presi, duration, incial_values, final_values],
+        data[data_name] = pd.Series([recall, roc_auc, accracy, pcd, presi, avg_duration, incial_values, final_values],
                                     index=['Recall_score', 'Auc_score', 'Accuracy_score', 'Diversity_PCD', 'Presicion', 'Time Mts', 'Inicial_values', 'Final_values'])
-        saver[data_name] = pd.Series([recall, roc_auc, accracy, pcd, presi, duration, incial_values, final_values],
+        saver[data_name] = pd.Series([recall, roc_auc, accracy, pcd, presi, avg_duration, incial_values, final_values],
                                      index=['Recall_score', 'Auc_score', 'Accuracy_score', 'Diversity_PCD', 'Presicion', 'Time Mts', 'Inicial_values', 'Final_values'])
         print('Done:', name)
         saver.T.to_csv(f"./results/{name}.csv",
